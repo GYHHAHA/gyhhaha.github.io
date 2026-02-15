@@ -1,0 +1,15 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  id: 97fb6c1c-941d-41a3-8b26-76daa9c4b919
+  title: GYH知识库
+  # description:
+  # keywords: []
+  # authors: []
+  github: https://github.com/GYHHAHA/gyhhaha.github.io
+  # To autogenerate a Table of Contents, run "myst init --write-toc"
+site:
+  template: book-theme
+  # options:
+  #   favicon: favicon.ico
+  #   logo: site_logo.png
