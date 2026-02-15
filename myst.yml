@@ -68,6 +68,29 @@ site:
           url: /contents/infra/devtools
         - title: AWS
           url: /contents/infra/aws
+          children:
+            - title: IAM
+              url: /contents/infra/aws/iam
+            - title: EC2
+              url: /contents/infra/aws/ec2
+            - title: S3
+              url: /contents/infra/aws/s3
+            - title: VPC
+              url: /contents/infra/aws/vpc
+            - title: Lambda
+              url: /contents/infra/aws/lambda
+            - title: Database
+              url: /contents/infra/aws/db
+            - title: Monitor
+              url: /contents/infra/aws/monitor
+            - title: Container
+              url: /contents/infra/aws/container
+            - title: Queue
+              url: /contents/infra/aws/mq
+            - title: Security
+              url: /contents/infra/aws/security
+            - title: Other
+              url: /contents/infra/aws/other
         - title: Azure
           url: /contents/infra/azure
         - title: Kubernetes
