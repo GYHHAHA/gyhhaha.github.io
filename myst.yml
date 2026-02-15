@@ -2,14 +2,92 @@
 version: 1
 project:
   id: 97fb6c1c-941d-41a3-8b26-76daa9c4b919
-  title: GYH知识库
+  title: "Welcome"
   # description:
   # keywords: []
   # authors: []
   github: https://github.com/GYHHAHA/gyhhaha.github.io
-  # To autogenerate a Table of Contents, run "myst init --write-toc"
+  toc:
+    - file: ./contents/index.md
+    - file: ./contents/frontend/index.md
+      children:
+        - file: ./contents/frontend/foundations/index.md
+        - file: ./contents/frontend/javascript/index.md
+          children:
+            - file: ./contents/frontend/javascript/basic.md
+        - file: ./contents/frontend/react/index.md
+    - file: ./contents/backend/index.md
+      children:
+        - file: ./contents/backend/java/index.md
+        - file: ./contents/backend/database/index.md
+        - file: ./contents/backend/spring/index.md
+        - file: ./contents/backend/nodejs/index.md
+        - file: ./contents/backend/other/index.md
+    - file: ./contents/infra/index.md
+      children:
+        - file: ./contents/infra/devtools/index.md
+        - file: ./contents/infra/aws/index.md
+        - file: ./contents/infra/azure/index.md
+        - file: ./contents/infra/kubernetes/index.md
+        - file: ./contents/infra/terraform/index.md
+    - file: ./contents/interview/index.md
+      children:
+        - file: ./contents/interview/foundations/index.md
+        - file: ./contents/interview/data-structures/index.md
+        - file: ./contents/interview/behavioral/index.md
+    - file: ./contents/harpsichord/index.md
 site:
   template: book-theme
-  # options:
-  #   favicon: favicon.ico
-  #   logo: site_logo.png
+  nav:
+    - title: Frontend
+      url: /contents/frontend
+      children:
+        - title: Foundations
+          url: /contents/frontend/foundations
+        - title: JavaScript
+          url: /contents/frontend/javascript
+        - title: React
+          url: /contents/frontend/react
+    - title: Backend
+      url: /contents/backend
+      children:
+        - title: Java
+          url: /contents/backend/java
+        - title: Database
+          url: /contents/backend/database
+        - title: Spring
+          url: /contents/backend/spring
+        - title: Node.js
+          url: /contents/backend/nodejs
+        - title: Other Topics
+          url: /contents/backend/other
+    - title: Infra
+      url: /contents/infra
+      children:
+        - title: Dev Tools
+          url: /contents/infra/devtools
+        - title: AWS
+          url: /contents/infra/aws
+        - title: Azure
+          url: /contents/infra/azure
+        - title: Kubernetes
+          url: /contents/infra/kubernetes
+        - title: Terraform
+          url: /contents/infra/terraform
+    - title: Interview
+      url: /contents/interview
+      children:
+        - title: Foundations
+          url: /contents/interview/foundations
+        - title: Data Structures
+          url: /contents/interview/data-structures
+        - title: Bahavioral
+          url: /contents/interview/behavioral
+    - title: Harpsichord
+      url: /contents/harpsichord
+  options:
+    favicon: favicon.svg
+    logo_text: Yuanhao Geng
+    folders: true
+  parts:
+    primary_sidebar_footer: contents/primary-sidebar-footer.md
