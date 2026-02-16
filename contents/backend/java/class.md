@@ -4,42 +4,33 @@ short_title: Class & Object
 
 # 面向对象
 
-“类与对象”是 Java 面试的**地基模块**。
-很多人觉得简单，但面试官经常从这里挖“底层理解”。
+## 基本概念
 
-我给你按：
+```{tip} Java 中的类
+一个 `.java` 文件中，最多只能有一个 public 顶级类，文件名必须和这个 public 类名一致。Java 中不能有独立函数，函数必须属于类。
+```
 
-> 🔥必问基础
-> ⭐进阶常问
-> 💡源码级/原理级
-
-系统梳理一遍。
-
----
-
-# 一、🔥 基础必问（不会直接扣分）
-
----
-
-## 1️⃣ 面向对象三大特性
-
-来自：
-
-Java
+### 三大特性
 
 - 封装
 - 继承
 - 多态
 
-### 面试追问：
-
-- 多态的实现原理？
-- 重载 vs 重写区别？
 - 为什么 Java 只支持单继承？
+- 多态的实现原理？
 
----
+- 方法调用是动态绑定
+- JVM 通过虚方法表查找
 
-## 2️⃣ 重载 vs 重写（经典题🔥）
+final 关键字（必问🔥）
+
+- 修饰类 → 不能继承
+- 修饰方法 → 不能重写
+- 修饰变量 → 不能修改
+
+- final 修饰对象，里面属性能改吗？
+
+### 重载与重写
 
 | 对比     | 重载     | 重写     |
 | -------- | -------- | -------- |
@@ -48,37 +39,16 @@ Java
 | 返回值   | 可不同   | 必须兼容 |
 | 访问权限 | 无限制   | 不能变小 |
 
-### 常见坑：
-
 - private 方法不能被重写
 - static 是隐藏不是重写
 
----
-
-## 3️⃣ 构造方法（高频）
+### 构造器
 
 - 构造器是否能重写？（不能）
 - 父类构造什么时候执行？
 - this() 和 super() 规则？
 
 👉 super() 必须第一行。
-
----
-
-## 4️⃣ final 关键字（必问🔥）
-
-- 修饰类 → 不能继承
-- 修饰方法 → 不能重写
-- 修饰变量 → 不能修改
-
-### 追问：
-
-- final 修饰对象，里面属性能改吗？
-- 为什么 String 是不可变的？
-
----
-
-## 5️⃣ this 和 super
 
 - this 表示当前对象
 - super 表示父类对象
@@ -87,29 +57,13 @@ Java
 
 - this() 和 super() 能否同时出现？
 
----
-
-# 二、⭐ 中频进阶
-
----
-
-## 6️⃣ equals 和 hashCode（高频🔥🔥）
-
-来自：
-
-Object
-
-### 必问：
+### Object方法
 
 - 为什么必须同时重写？
 - equals 默认比较什么？
 - == 和 equals 区别？
 
 👉 equals 默认比较地址。
-
----
-
-## 7️⃣ Object 类方法（必问）
 
 - toString()
 - equals()
@@ -118,16 +72,10 @@ Object
 - notify()
 - clone()
 
-### 追问：
-
 - clone 是浅拷贝还是深拷贝？
 - 为什么不推荐使用 clone？
 
----
-
-## 8️⃣ 抽象类 vs 接口（经典对比🔥）
-
-来自：
+### 抽象类与接口
 
 Interface
 
@@ -142,9 +90,7 @@ Interface
 - 什么时候用抽象类？
 - 什么时候用接口？
 
----
-
-## 9️⃣ 静态变量 & 静态方法
+### 静态成员
 
 - static 属于类
 - 不能访问非静态成员
@@ -153,10 +99,6 @@ Interface
 
 - 静态方法能否被重写？（不能）
 - 类加载时机？
-
----
-
-# 三、🔥 初始化顺序（高频）
 
 面试经典题：
 
@@ -171,39 +113,7 @@ Interface
 5. 子类实例代码块
 6. 子类构造器
 
----
-
-# 四、💡 深一点的问题（中高级）
-
----
-
-## 10️⃣ 多态底层原理（虚方法表）
-
-- 方法调用是动态绑定
-- JVM 通过虚方法表查找
-
----
-
-## 11️⃣ 值传递还是引用传递？
-
-Java 只有值传递。
-
-常考题：
-
-- 传对象为什么能改？
-
-👉 传的是对象地址的副本。
-
----
-
-## 12️⃣ 深拷贝 vs 浅拷贝
-
-- 浅拷贝：引用复制
-- 深拷贝：对象内容复制
-
----
-
-## 13️⃣ 内部类（常问）
+### 内部类
 
 - 成员内部类
 - 静态内部类
@@ -214,62 +124,67 @@ Java 只有值传递。
 
 - 为什么内部类可以访问外部类成员？
 
----
+### 泛型
 
-## 14️⃣ 反射（常和类结合问）
+123
 
-来自：
+## 新特性
 
-Reflection
+### Record
 
-常问：
+record 是在 Java 14 引入（preview），并在 Java 16 正式成为标准特性，其核心目标是为“纯数据载体类”提供更简洁、不可变的语法。
 
-- 反射会破坏单例吗？
-- 如何获取 Class 对象？
+```java
+public record Person(String name, int age) {}
+```
 
----
+编译器自动生成：
 
-# 五、🔥 高频排序（真实面试）
+- private final fields
+- constructor
+- getter（name() 而不是 getName()）
+- equals()
+- hashCode()
+- toString()
 
-1. equals/hashCode
-2. 抽象类 vs 接口
-3. 重载 vs 重写
-4. 初始化顺序
-5. final
-6. 静态变量
-7. Object 方法
+record 天生是不可变的，所有字段默认都是 private final，并且不会生成 setter 方法。
 
----
+record 不能继承其他类（它默认继承 java.lang.Record），但可以实现接口。
 
-# 六、面试官真正考什么？
+record 可以自定义构造器，并且可以定义方法：
 
-| 表面问题   | 真正考察       |
-| ---------- | -------------- |
-| equals     | 集合原理       |
-| 重写       | 多态理解       |
-| 初始化顺序 | 类加载机制     |
-| final      | 不可变对象设计 |
-| 抽象类接口 | 设计能力       |
+```java
+public record Person(String name, int age) {
+    public Person {
+        if (age < 0) {
+            throw new IllegalArgumentException("Age cannot be negative");
+        }
+    }
+    public boolean isAdult() {
+        return age >= 18;
+    }
+}
+```
 
----
+### Sealed Class
 
-# 🎯 如果你是 1-3 年经验
+sealed class 是 Java 17 引入的特性，用于限制类的继承范围，只允许指定的子类进行扩展，从而实现受控继承。在Java 17之前，如果你想限制继承，只能用 final，但 final 会完全禁止继承，没办法“只允许特定子类”。
 
-必须非常熟：
+```java
+// 只有 Circle 和 Rectangle 可以继承 Shape
+public sealed class Shape
+    permits Circle, Rectangle {
+}
 
-- equals/hashCode
-- 抽象类 vs 接口
-- 重写规则
-- 初始化顺序
-- final
-- 多态原理
+// 被允许继承的类，必须声明为：final/sealed/non-sealed
+public final class Circle extends Shape {
+}
+```
 
----
+不仅 class 可以 sealed，interface 也可以：
 
-如果你愿意，我可以给你：
-
-- 🔥 类与对象 30 道面试真题（带标准回答）
-- 🔥 一套“八股问答速记版”
-- 🔥 帮你判断你现在基础扎实度
-
-你现在准备的是校招、社招，还是中高级岗？
+```java
+public sealed interface Result
+    permits Success, Failure {
+}
+```

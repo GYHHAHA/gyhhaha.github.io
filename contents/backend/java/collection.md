@@ -2,6 +2,8 @@
 short_title: Collection
 ---
 
+- List.of()
+
 # 集合框架
 
 Java 集合框架是后端面试**绝对核心高频模块**（和多线程一个级别）。
