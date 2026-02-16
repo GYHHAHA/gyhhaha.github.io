@@ -1,4 +1,5 @@
 # Foundations
 
-> TODO: Write content here.
-
+TLS/SSL
+CORS
+prelight requests /options
