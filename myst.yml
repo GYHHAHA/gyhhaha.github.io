@@ -19,6 +19,13 @@ project:
     - file: ./contents/backend/index.md
       children:
         - file: ./contents/backend/java/index.md
+          children:
+            - file: ./contents/backend/java/basic.md
+            - file: ./contents/backend/java/class.md
+            - file: ./contents/backend/java/collection.md
+            - file: ./contents/backend/java/thread.md
+            - file: ./contents/backend/java/java8.md
+            - file: ./contents/backend/java/design-pattern.md
         - file: ./contents/backend/database/index.md
         - file: ./contents/backend/spring/index.md
         - file: ./contents/backend/nodejs/index.md
