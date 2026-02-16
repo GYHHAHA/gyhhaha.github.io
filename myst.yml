@@ -12,10 +12,20 @@ project:
     - file: ./contents/frontend/index.md
       children:
         - file: ./contents/frontend/foundations/index.md
+          children:
+            - file: ./contents/frontend/foundations/css.md
+            - file: ./contents/frontend/foundations/build.md
+            - file: ./contents/frontend/foundations/optim.md
         - file: ./contents/frontend/javascript/index.md
           children:
             - file: ./contents/frontend/javascript/basic.md
+            - file: ./contents/frontend/javascript/design-pattern.md
         - file: ./contents/frontend/react/index.md
+          children:
+            - file: ./contents/frontend/react/basic.md
+            - file: ./contents/frontend/react/router.md
+            - file: ./contents/frontend/react/status.md
+            - file: ./contents/frontend/react/zod.md
     - file: ./contents/backend/index.md
       children:
         - file: ./contents/backend/java/index.md
@@ -26,13 +36,36 @@ project:
             - file: ./contents/backend/java/thread.md
             - file: ./contents/backend/java/java8.md
             - file: ./contents/backend/java/design-pattern.md
-        - file: ./contents/backend/database/index.md
         - file: ./contents/backend/spring/index.md
+          children:
+            - file: ./contents/backend/spring/core.md
+            - file: ./contents/backend/spring/jpa.md
+            - file: ./contents/backend/spring/security.md
+            - file: ./contents/backend/spring/test.md
+        - file: ./contents/backend/queue/index.md
+          children:
+            - file: ./contents/backend/queue/rabbit.md
+            - file: ./contents/backend/queue/kafka.md
+        - file: ./contents/backend/database/index.md
+          children:
+            - file: ./contents/backend/database/sql.md
+            - file: ./contents/backend/database/nosql.md
+            - file: ./contents/backend/database/redis.md
+            - file: ./contents/backend/database/postgre.md
         - file: ./contents/backend/nodejs/index.md
-        - file: ./contents/backend/other/index.md
+          children:
+            - file: ./contents/backend/nodejs/basic.md
+            - file: ./contents/backend/nodejs/express.md
+            - file: ./contents/backend/nodejs/kysely.md
+            - file: ./contents/backend/nodejs/nestjs.md
     - file: ./contents/infra/index.md
       children:
         - file: ./contents/infra/devtools/index.md
+          children:
+            - file: ./contents/infra/devtools/git.md
+            - file: ./contents/infra/devtools/maven.md
+            - file: ./contents/infra/devtools/jenkins.md
+            - file: ./contents/infra/devtools/docker.md
         - file: ./contents/infra/aws/index.md
           children:
             - file: ./contents/infra/aws/iam.md
@@ -54,6 +87,11 @@ project:
     - file: ./contents/interview/index.md
       children:
         - file: ./contents/interview/foundations/index.md
+          children:
+            - file: ./contents/interview/foundations/network.md
+            - file: ./contents/interview/foundations/os.md
+            - file: ./contents/interview/foundations/distributed.md
+            - file: ./contents/interview/foundations/design.md
         - file: ./contents/interview/data-structures/index.md
         - file: ./contents/interview/behavioral/index.md
     - file: ./contents/harpsichord/index.md
@@ -76,12 +114,12 @@ site:
           url: /contents/backend/java
         - title: Database
           url: /contents/backend/database
+        - title: Queue
+          url: /contents/backend/queue
         - title: Spring
           url: /contents/backend/spring
         - title: Node.js
           url: /contents/backend/nodejs
-        - title: Other Topics
-          url: /contents/backend/other
     - title: Infra
       url: /contents/infra
       children:

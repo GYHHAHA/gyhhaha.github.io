@@ -1,5 +1,5 @@
 ---
-short_title: bbbb
+short_title: JavaScript Basic
 ---
 
 123
