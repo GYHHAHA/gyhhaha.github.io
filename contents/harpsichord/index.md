@@ -1,5 +1,5 @@
 ---
-title: Harpsichord
+short_title: Harpsichord
 ---
 
 123

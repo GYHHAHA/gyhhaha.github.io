@@ -27,6 +27,18 @@ project:
       children:
         - file: ./contents/infra/devtools/index.md
         - file: ./contents/infra/aws/index.md
+          children:
+            - file: ./contents/infra/aws/iam.md
+            - file: ./contents/infra/aws/ec2.md
+            - file: ./contents/infra/aws/s3.md
+            - file: ./contents/infra/aws/vpc.md
+            - file: ./contents/infra/aws/lambda.md
+            - file: ./contents/infra/aws/db.md
+            - file: ./contents/infra/aws/monitor.md
+            - file: ./contents/infra/aws/container.md
+            - file: ./contents/infra/aws/mq.md
+            - file: ./contents/infra/aws/security.md
+            - file: ./contents/infra/aws/other.md
         - file: ./contents/infra/azure/index.md
         - file: ./contents/infra/kubernetes/index.md
         - file: ./contents/infra/terraform/index.md
@@ -68,29 +80,6 @@ site:
           url: /contents/infra/devtools
         - title: AWS
           url: /contents/infra/aws
-          children:
-            - title: IAM
-              url: /contents/infra/aws/iam
-            - title: EC2
-              url: /contents/infra/aws/ec2
-            - title: S3
-              url: /contents/infra/aws/s3
-            - title: VPC
-              url: /contents/infra/aws/vpc
-            - title: Lambda
-              url: /contents/infra/aws/lambda
-            - title: Database
-              url: /contents/infra/aws/db
-            - title: Monitor
-              url: /contents/infra/aws/monitor
-            - title: Container
-              url: /contents/infra/aws/container
-            - title: Queue
-              url: /contents/infra/aws/mq
-            - title: Security
-              url: /contents/infra/aws/security
-            - title: Other
-              url: /contents/infra/aws/other
         - title: Azure
           url: /contents/infra/azure
         - title: Kubernetes
@@ -111,6 +100,7 @@ site:
   options:
     favicon: favicon.svg
     logo_text: Yuanhao Geng
+    # hide_footer_links: true
     folders: true
   parts:
     primary_sidebar_footer: contents/primary-sidebar-footer.md

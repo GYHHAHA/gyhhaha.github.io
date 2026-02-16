@@ -1,3 +1,7 @@
+---
+short_title: Queue
+---
+
 # SQS
 
 # SNS

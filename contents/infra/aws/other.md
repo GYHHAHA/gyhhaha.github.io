@@ -1,3 +1,7 @@
+---
+short_title: Other
+---
+
 # CloudFront
 
 # Route53

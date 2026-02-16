@@ -1,5 +1,5 @@
 ---
-title: Frontend
+short_title: Frontend
 ---
 
 123

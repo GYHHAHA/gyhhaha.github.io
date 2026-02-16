@@ -1,5 +1,5 @@
 ---
-title: bbbb
+short_title: bbbb
 ---
 
 123
