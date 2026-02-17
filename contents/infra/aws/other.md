@@ -4,8 +4,10 @@ short_title: Other
 
 # CloudFront
 
+33m
+
 # Route53
 
-# Api Gateway
+1h 53m
 
-# LB & ASG
+# Api Gateway

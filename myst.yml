@@ -76,6 +76,7 @@ project:
             - file: ./contents/infra/aws/db.md
             - file: ./contents/infra/aws/monitor.md
             - file: ./contents/infra/aws/container.md
+            - file: ./contents/infra/aws/iac.md
             - file: ./contents/infra/aws/mq.md
             - file: ./contents/infra/aws/security.md
             - file: ./contents/infra/aws/other.md
