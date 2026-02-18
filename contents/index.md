@@ -4,5 +4,3 @@ site:
 ---
 
 # Hi, I'm Yuanhao Geng 👋
-
-123
