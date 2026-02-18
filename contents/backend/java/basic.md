@@ -335,5 +335,3 @@ try (BufferedReader br = new BufferedReader(new FileReader("test.txt"))) {
 // 不需要写 finally，br 会被自动关闭
 ```
 ````
-
-## 文件与网络
