@@ -19,6 +19,7 @@ project:
         - file: ./contents/frontend/javascript/index.md
           children:
             - file: ./contents/frontend/javascript/basic.md
+            - file: ./contents/frontend/javascript/browser.md
             - file: ./contents/frontend/javascript/design-pattern.md
         - file: ./contents/frontend/react/index.md
           children:
@@ -39,6 +40,8 @@ project:
         - file: ./contents/backend/spring/index.md
           children:
             - file: ./contents/backend/spring/core.md
+            - file: ./contents/backend/spring/mvc.md
+            - file: ./contents/backend/spring/boot.md
             - file: ./contents/backend/spring/jpa.md
             - file: ./contents/backend/spring/security.md
             - file: ./contents/backend/spring/test.md
