@@ -87,6 +87,7 @@ project:
         - file: ./contents/infra/kubernetes/index.md
           children:
             - file: ./contents/infra/kubernetes/basic.md
+            - file: ./contents/infra/kubernetes/advanced.md
         - file: ./contents/infra/terraform/index.md
     - file: ./contents/interview/index.md
       children:

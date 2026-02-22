@@ -25,6 +25,14 @@ cloud-controller-manager
 kube-scheduler
 : kube-scheduler 负责决定每个新创建的 Pod 应该运行在哪个 Node 上。它会根据资源情况（CPU、内存）、节点标签、污点容忍等条件进行过滤和打分，选出最合适的节点，并将调度结果写回 API Server。它是 Kubernetes 的调度决策核心。
 
+#### 其他
+
+CNI
+: CNI（Container Network Interface）是一套容器网络接口标准，定义了容器运行时（如 kubelet）如何调用网络插件为容器或 Pod 配置网络；当 Kubernetes 创建 Pod 时，会通过 CNI 插件为其分配 IP 地址、创建虚拟网卡、配置路由和网络策略，从而实现 Pod 之间以及跨节点的网络互通。
+
+Calico
+: Calico 是一个实现了 CNI 规范的 Kubernetes 网络插件，用于为 Pod 分配 IP 地址、实现跨节点网络互通，并支持基于 NetworkPolicy 的网络访问控制；它通过路由（如 BGP）或隧道（如 VXLAN）实现集群内通信，并可利用 iptables 或 eBPF 在内核层进行高性能的流量过滤，是生产环境中常用的容器网络方案。
+
 ### 疑难问题
 
 Master节点的数据流转与监听机制是什么？
@@ -52,6 +60,9 @@ Master节点的数据流转与监听机制是什么？
 | Garbage Collector Controller | 根据 OwnerReference 关系自动级联删除或清理孤儿资源                                                     |
 | ResourceQuota Controller     | 统计并限制 Namespace 级别的资源使用总量                                                                |
 | LimitRange Controller        | 为容器设置默认资源请求/限制，并校验其是否在允许范围内                                                  |
+
+Calico是如何实现网络互通？
+: Calico 通过为每个节点分配独立的 Pod 网段，并在 Linux 路由表中写入到其他节点 Pod 网段的路由规则，在跨节点通信时通过 IPIP 隧道封装数据包发送到目标节点，再通过本地 veth（cali 网卡）将数据转发到具体 Pod，从而实现集群内 Pod 的网络互通。换句话说：同一个节点内，Pod 之间通过 veth（cali 网卡）直连通信；不同节点之间，通过隧道（IPIP / VXLAN）把数据封装后发送到目标节点，再通过目标节点上的 veth 转发给 Pod。
 
 ## Node
 
@@ -167,3 +178,29 @@ kubectl get 的输出格式参数有哪些？
 | -o json           | JSON 格式       | 程序处理、CI/CD        |
 | -o jsonpath       | 精确取字段      | 自动化脚本             |
 | -o custom-columns | 自定义列        | 运维报表               |
+
+kubectl 的常用命令有哪些？
+: 内容见下表
+
+| 分类     | 命令          | 作用                       | 常用示例                                                      |
+| -------- | ------------- | -------------------------- | ------------------------------------------------------------- |
+| 查看排查 | describe      | 查看资源详细信息（含事件） | `kubectl describe pod nginx`                                  |
+| 查看排查 | logs          | 查看容器日志               | `kubectl logs -f nginx`                                       |
+| 查看排查 | exec          | 进入容器执行命令           | `kubectl exec -it nginx -- /bin/bash`                         |
+| 查看排查 | top           | 查看资源使用情况           | `kubectl top pod`                                             |
+| 修改管理 | apply         | 声明式创建或更新           | `kubectl apply -f deploy.yaml`                                |
+| 修改管理 | edit          | 在线编辑资源               | `kubectl edit deployment nginx`                               |
+| 修改管理 | patch         | 局部修改资源               | `kubectl patch deployment nginx -p '{"spec":{"replicas":3}}'` |
+| 修改管理 | scale         | 扩缩容                     | `kubectl scale deployment nginx --replicas=5`                 |
+| 发布管理 | rollout       | 滚动更新 / 回滚            | `kubectl rollout undo deployment nginx`                       |
+| 资源操作 | expose        | 创建 Service               | `kubectl expose deployment nginx --port=80`                   |
+| 资源操作 | label         | 添加标签                   | `kubectl label pod nginx env=prod`                            |
+| 资源操作 | annotate      | 添加注解                   | `kubectl annotate pod nginx author=admin`                     |
+| 节点维护 | cordon        | 禁止调度到节点             | `kubectl cordon node1`                                        |
+| 节点维护 | drain         | 驱逐节点上的 Pod           | `kubectl drain node1 --ignore-daemonsets`                     |
+| 节点维护 | uncordon      | 恢复节点调度               | `kubectl uncordon node1`                                      |
+| 调试     | port-forward  | 本地端口转发               | `kubectl port-forward pod/nginx 8080:80`                      |
+| 调试     | cp            | 容器与本地文件拷贝         | `kubectl cp nginx:/tmp/a.txt ./`                              |
+| 集群管理 | config        | 管理 kubeconfig            | `kubectl config use-context dev`                              |
+| 集群管理 | api-resources | 查看支持的资源类型         | `kubectl api-resources`                                       |
+| 学习神器 | explain       | 查看字段说明               | `kubectl explain pod.spec`                                    |
