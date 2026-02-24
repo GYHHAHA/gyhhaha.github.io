@@ -61,6 +61,10 @@ project:
             - file: ./contents/backend/nodejs/express.md
             - file: ./contents/backend/nodejs/kysely.md
             - file: ./contents/backend/nodejs/nestjs.md
+        - file: ./contents/backend/python/index.md
+          children:
+            - file: ./contents/backend/python/basic.md
+            - file: ./contents/backend/python/fastapi.md
     - file: ./contents/infra/index.md
       children:
         - file: ./contents/infra/devtools/index.md
