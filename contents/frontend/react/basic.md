@@ -416,7 +416,7 @@ useEffect(() => {
 }, [a, b]);
 ```
 
-useLayoutEffect 在浏览器绘制之前执行，一般用在需要读 DOM 尺寸或计算布局，或者需要在 React 绘制之前修改 DOM 的时候，注意这个函数会阻塞浏览器绘制。。
+useLayoutEffect 在浏览器绘制之前执行，一般用在需要读 DOM 尺寸或计算布局，或者需要在 React 绘制之前修改 DOM 的时候，注意这个函数会阻塞浏览器绘制。
 
 ```javascript
 import { useState, useRef, useLayoutEffect } from "react";

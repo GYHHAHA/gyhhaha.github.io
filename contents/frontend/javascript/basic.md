@@ -209,6 +209,45 @@ console.log(counter.add()); // 1
 | 防抖 | 只要你一直在动，我就不动。 | 1. 搜索框输入查询（用户打完字再请求）。2. 窗口大小调整（resize）（调整停止后再计算尺寸）。    |
 | 节流 | 不管你动多快，我按节奏动。 | 1. 滚动加载（scroll）（滑到底部触发加载）。2. 高频点击提交（防止重复下单）。3. 抢购按钮点击。 |
 
+```javascript
+/**
+ * @param {Function} fn - 要执行的函数
+ * @param {number} delay - 等待时间
+ */
+function debounce(fn, delay) {
+  let timer = null; // 闭包存储定时器
+
+  return function (...args) {
+    // 如果有定时器，直接掐断，重新开始数数
+    if (timer) clearTimeout(timer);
+
+    timer = setTimeout(() => {
+      fn.apply(this, args); // 关键：继承定义时的外层作用域 this (Lexical this)
+    }, delay);
+  };
+}
+```
+
+```javascript
+/**
+ * @param {Function} fn
+ * @param {number} delay
+ */
+function throttle(fn, delay) {
+  let canRun = true; // 状态锁
+
+  return function (...args) {
+    if (!canRun) return; // 如果锁着，直接无视
+
+    canRun = false; // 立即关门
+    setTimeout(() => {
+      fn.apply(this, args);
+      canRun = true; // 时间到了，开门迎客
+    }, delay);
+  };
+}
+```
+
 深拷贝与浅拷贝
 : 见下
 
@@ -736,7 +775,48 @@ function loop() {
 ```
 
 手写Promise基础实现
-: 待实现
+: 见下
+
+```javascript
+class MyPromise {
+  constructor(executor) {
+    this.state = "pending";
+    this.value = undefined;
+    this.callbacks = []; // 1. 存储 { onFulfilled, resolveNext }
+
+    const resolve = (value) => {
+      if (this.state !== "pending") return;
+      this.state = "fulfilled";
+      this.value = value;
+      // 3. 异步触发：当 resolve 被调用时，依次执行之前存下的回调
+      this.callbacks.forEach((cb) => this._handle(cb));
+    };
+
+    executor(resolve);
+  }
+
+  then(onFulfilled) {
+    // 2. 核心：每个 then 都返回一个新 Promise，实现链式调用
+    return new MyPromise((resolveNext) => {
+      const callback = { onFulfilled, resolveNext };
+
+      if (this.state === "pending") {
+        this.callbacks.push(callback);
+      } else {
+        this._handle(callback);
+      }
+    });
+  }
+
+  // 内部辅助方法：处理具体的逻辑流转
+  _handle({ onFulfilled, resolveNext }) {
+    // 执行当前 then 的回调
+    const res = onFulfilled(this.value);
+    // 关键：将当前回调的结果，传递给下一个 Promise 的 resolve
+    resolveNext(res);
+  }
+}
+```
 
 手写Promise.all并发控制limit
 : 待实现
