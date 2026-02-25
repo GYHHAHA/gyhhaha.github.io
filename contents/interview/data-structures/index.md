@@ -4,7 +4,7 @@
 
 这部分是所有面试的基石，主要考查对边界条件的控制和空间优化。
 
-- Merge Sorted Array: 逆向双指针的经典应用。
+### Merge Sorted Array: 逆向双指针的经典应用。
 
 将两个有序数组合并到第一个数组中，利用第一个数组末尾的空余空间，从后往前比较并填充最大值，以避免覆盖。
 
@@ -45,7 +45,7 @@ var merge = function (nums1, m, nums2, n) {
 };
 ```
 
-- Remove Duplicates from Sorted Array II: 快慢指针控制重复次数。
+### Remove Duplicates from Sorted Array II: 快慢指针控制重复次数。
 
 利用数组已排序的特性，使用快慢双指针遍历，只有当快指针遇到与慢指针不同的新元素时，才将其移动到慢指针的下一个位置。
 
@@ -78,7 +78,7 @@ var removeDuplicates = function (nums) {
 };
 ```
 
-- Rotate Array: 三次翻转法的巧妙空间优化。
+### Rotate Array: 三次翻转法的巧妙空间优化。
 
 通过三次反转数组的技巧实现原地旋转：先反转整个数组，再分别反转前 $k$ 个元素和剩余的元素。
 
@@ -118,7 +118,7 @@ var rotate = function (nums, k) {
 };
 ```
 
-- Best Time to Buy and Sell Stock: 贪心思想的入门。
+### Best Time to Buy and Sell Stock: 贪心思想的入门。
 
 遍历数组并动态更新历史最低价格，同时计算每一天卖出所能获得的最大利润，取其中的最大值。
 
@@ -148,7 +148,7 @@ var maxProfit = function (prices) {
 };
 ```
 
-- Trapping Rain Water: (高频 Hard) 双指针或单调栈的巅峰之作。
+### Trapping Rain Water: (高频 Hard) 双指针或单调栈的巅峰之作。
 
 使用双指针法从两端向中间移动，实时维护左侧和右侧的最高边界，每个位置能接的水量取决于它左右两侧最高边界中的较小值。
 
@@ -197,7 +197,7 @@ var trap = function (height) {
 };
 ```
 
-- Two Sum II - Input Array Is Sorted: 有序数组双指针的模板题。
+### Two Sum II - Input Array Is Sorted: 有序数组双指针的模板题。
 
 由于数组已经是升序排列的，我们可以使用双指针法，分别从数组的首尾向中间移动。这种方法可以利用排序特性，在 $O(n)$ 时间复杂度和 $O(1)$ 额外空间内找到目标值。
 
@@ -231,7 +231,7 @@ var twoSum = function (numbers, target) {
 };
 ```
 
-- Container With Most Water: 贪心证明与双指针结合。
+### Container With Most Water: 贪心证明与双指针结合。
 
 ```javascript
 /**
@@ -267,7 +267,7 @@ var maxArea = function (height) {
 };
 ```
 
-- 3Sum: 排序+双指针，去重逻辑是面试重点。
+### 3Sum: 排序+双指针，去重逻辑是面试重点。
 
 解决 3Sum 的核心思路是：先对数组进行排序，然后固定一个数 nums[i]，再利用双指针在剩余的数组部分寻找另外两个数，使得三数之和为零。
 
@@ -319,7 +319,7 @@ var threeSum = function (nums) {
 
 滑动窗口是处理子串、子数组问题的万能钥匙。
 
-- Minimum Size Subarray Sum: 动态窗口大小的经典题。
+### Minimum Size Subarray Sum: 动态窗口大小的经典题。
 
 由于数组中全是正整数，我们可以确定：窗口越宽，和越大；窗口越窄，和越小。这种单调性让我们能够通过调整左右边界，在线性时间内找到最优解。
 
@@ -354,7 +354,7 @@ var minSubArrayLen = function (target, nums) {
 };
 ```
 
-- Longest Substring Without Repeating Characters: 哈希表配合窗口滑动的标准模版。
+### Longest Substring Without Repeating Characters: 哈希表配合窗口滑动的标准模版。
 
 使用滑动窗口结合哈希表（Map）。我们利用窗口 $[left, right]$ 扫描字符串，哈希表用于记录每个字符最后出现的位置。当遇到重复字符时，直接将左边界 left 跳过重复点，从而保持窗口内字符的唯一性。
 
@@ -390,7 +390,7 @@ var lengthOfLongestSubstring = function (s) {
 };
 ```
 
-- Minimum Window Substring: (高频 Hard) 滑动窗口最复杂的形态。
+### Minimum Window Substring: (高频 Hard) 滑动窗口最复杂的形态。
 
 我们需要在 $s$ 中寻找一个最短的窗口，使其包含 $t$ 中所有的字符及其出现的频率。
 
@@ -461,7 +461,7 @@ var minWindow = function (s, t) {
 };
 ```
 
-- Group Anagrams: 哈希表处理字符串分类。
+### Group Anagrams: 哈希表处理字符串分类。
 
 所谓“字母异位词”（Anagram），是指两个字符串包含的字母种类和数量完全相同，只是顺序不同。
 
@@ -494,7 +494,7 @@ var groupAnagrams = function (strs) {
 };
 ```
 
-- Longest Consecutive Sequence: 利用哈希表将 $O(n \log n)$ 优化至 $O(n)$。
+### Longest Consecutive Sequence: 利用哈希表将 $O(n \log n)$ 优化至 $O(n)$。
 
 我们必须利用 哈希表（Set） 来实现 $O(1)$ 级别的查询。核心逻辑是：对于数组中的每个数，我们只在它是序列的起点时，才开始向后计数。
 
@@ -531,7 +531,7 @@ var longestConsecutive = function (nums) {
 };
 ```
 
-- Two Sum: 面试第一题，考查对哈希表的理解。
+### Two Sum: 面试第一题，考查对哈希表的理解。
 
 ```javascript
 /**
@@ -556,7 +556,7 @@ var twoSum = function (nums, target) {
 
 考查坐标变换和模拟能力。
 
-- Spiral Matrix: 经典的螺旋遍历模拟。
+### Spiral Matrix: 经典的螺旋遍历模拟。
 
 解决螺旋遍历最稳妥的方法是定义四个边界：top（上）、bottom（下）、left（左）、right（右）。每当我们遍历完一个方向，就收缩对应的边界。
 
@@ -612,7 +612,7 @@ var spiralOrder = function (matrix) {
 };
 ```
 
-- Rotate Image: 矩阵翻转代替旋转的技巧。
+### Rotate Image: 矩阵翻转代替旋转的技巧。
 
 最优雅的解法是利用线性代数的几何特性，将顺时针旋转 $90^{\circ}$ 拆解为两个简单的步骤：转置（Transpose）：将矩阵的行变为列（沿主对角线翻转）。镜像（Reflect）：将每一行进行左右反转。
 
@@ -641,7 +641,7 @@ var rotate = function (matrix) {
 };
 ```
 
-- Set Matrix Zeroes: 巧妙利用原矩阵第一行/列做标记位。
+### Set Matrix Zeroes: 巧妙利用原矩阵第一行/列做标记位。
 
 这道题的难点在于**原地（In-place）**操作。如果我们直接在遍历时发现 0 就把行和列置为 0，那么后续的遍历就会被这些新生成的 0 干扰，导致整个矩阵最终都变成 0。常规解法需要 $O(m + n)$ 的额外空间来记录哪些行和列需要置零，但为了达到面试进阶要求的 $O(1)$ 空间，我们可以利用矩阵的第一行和第一列来充当“标记位”。
 
@@ -697,7 +697,7 @@ var setZeroes = function (matrix) {
 };
 ```
 
-- Merge Intervals: 区间问题的核心：排序 + 合并逻辑。
+### Merge Intervals: 区间问题的核心：排序 + 合并逻辑。
 
 如果不排序，区间可能以任意顺序出现，你就必须不断回溯对比，复杂度会失控。一旦按起始位置排序，我们只需要关注当前区间是否与上一个“合并后的区间”产生交集。
 
@@ -735,7 +735,7 @@ var merge = function (intervals) {
 };
 ```
 
-- Insert Interval: 处理区间重叠的细致考查。
+### Insert Interval: 处理区间重叠的细致考查。
 
 既然输入的 intervals 已经是有序且不重叠的，我们不需要重新排序，而是可以利用这一特性，通过一次遍历将区间分为三个阶段处理：
 
@@ -824,8 +824,9 @@ var isValid = function (s) {
 };
 ```
 
-- Min Stack: 辅助栈的设计思想。
-  为了实现常数级查找，我们需要“空间换时间”。
+### Min Stack: 辅助栈的设计思想。
+
+为了实现常数级查找，我们需要“空间换时间”。
 
 ```javascript
 var MinStack = function () {
@@ -877,8 +878,9 @@ MinStack.prototype.getMin = function () {
 };
 ```
 
-- Linked List Cycle: 快慢指针（判环）的起源。
-  这是面试官最想听到的解法。我们设置两个指针：慢指针 (slow) 每次走一步，快指针 (fast) 每次走两步。
+### Linked List Cycle: 快慢指针（判环）的起源。
+
+这是面试官最想听到的解法。我们设置两个指针：慢指针 (slow) 每次走一步，快指针 (fast) 每次走两步。
 
 如果链表中没有环，快指针最终会到达终点（null）。
 
@@ -911,8 +913,9 @@ var hasCycle = function (head) {
 };
 ```
 
-- Add Two Numbers: 链表模拟大数加法。
-  我们可以直接从头节点开始相加，处理进位逻辑，这正符合我们手工加法的习惯。
+### Add Two Numbers: 链表模拟大数加法。
+
+我们可以直接从头节点开始相加，处理进位逻辑，这正符合我们手工加法的习惯。
 
 ```javascript
 /**
@@ -957,8 +960,9 @@ var addTwoNumbers = function (l1, l2) {
 };
 ```
 
-- Reverse Linked List II: 局部反转链表，考察指针断开与重连的细节。
-  它的难点在于：你不仅要反转中间那段链表，还要把反转后的部分与原链表的**前驱（Predecessor）和后继（Successor）**重新缝合起来。
+### Reverse Linked List II: 局部反转链表，考察指针断开与重连的细节。
+
+它的难点在于：你不仅要反转中间那段链表，还要把反转后的部分与原链表的**前驱（Predecessor）和后继（Successor）**重新缝合起来。
 
 ```javascript
 /**
@@ -996,8 +1000,9 @@ var reverseBetween = function (head, left, right) {
 };
 ```
 
-- Copy List with Random Pointer: 哈希表或原地拆分节点的进阶操作。
-  通过在原节点后面直接插入克隆节点，我们可以利用这种物理位置的邻近性来寻找 random 节点，从而将空间复杂度降到 $O(1)$。
+### Copy List with Random Pointer: 哈希表或原地拆分节点的进阶操作。
+
+通过在原节点后面直接插入克隆节点，我们可以利用这种物理位置的邻近性来寻找 random 节点，从而将空间复杂度降到 $O(1)$。
 
 ```javascript
 var copyRandomList = function (head) {
@@ -1038,8 +1043,9 @@ var copyRandomList = function (head) {
 };
 ```
 
-- LRU Cache: (必考 Medium) 哈希表 + 双向链表的工程实践。
-  最近使用的在前：每次 get 或 put 现有的 key 时，将对应的节点移动到链表头部。
+### LRU Cache: (必考 Medium) 哈希表 + 双向链表的工程实践。
+
+最近使用的在前：每次 get 或 put 现有的 key 时，将对应的节点移动到链表头部。
 
 最久未使用的在后：当缓存满时，直接移除链表尾部的节点，并同步删除哈希表中的记录。
 
@@ -1137,8 +1143,9 @@ LRUCache.prototype._popTail = function () {
 
 递归是二叉树的灵魂，必须熟练掌握 DFS 和 BFS。
 
-- Invert Binary Tree: 递归思想的最直观体现。
-  递归地交换每一个节点的左右子节点。
+### Invert Binary Tree: 递归思想的最直观体现。
+
+递归地交换每一个节点的左右子节点。
 
 ```javascript
 /**
@@ -1162,7 +1169,7 @@ var invertTree = function (root) {
 };
 ```
 
-- Construct Binary Tree from Preorder and Inorder Traversal: 递归构建树的核心逻辑。
+### Construct Binary Tree from Preorder and Inorder Traversal: 递归构建树的核心逻辑。
 
 我们通过递归来不断构建子树：
 
@@ -1217,7 +1224,7 @@ var buildTree = function (preorder, inorder) {
 };
 ```
 
-- Lowest Common Ancestor of a Binary Tree: 递归寻找公共祖先，逻辑精妙。
+### Lowest Common Ancestor of a Binary Tree: 递归寻找公共祖先，逻辑精妙。
 
 对于任意一个节点，我们向上汇报三种情况：
 
@@ -1271,7 +1278,7 @@ var lowestCommonAncestor = function (root, p, q) {
 };
 ```
 
-- Binary Tree Level Order Traversal: BFS 的标准层序遍历。
+### Binary Tree Level Order Traversal: BFS 的标准层序遍历。
 
 为了实现这一点，我们使用 队列 (Queue) 来辅助遍历。
 
@@ -1309,7 +1316,7 @@ var levelOrder = function (root) {
 };
 ```
 
-- Binary Tree Zigzag Level Order Traversal: 层序遍历的变形。
+### Binary Tree Zigzag Level Order Traversal: 层序遍历的变形。
 
 ```javascript
 /**
@@ -1349,7 +1356,7 @@ var zigzagLevelOrder = function (root) {
 };
 ```
 
-- Binary Tree Maximum Path Sum: (高频 Hard) 树形 DP 的经典。
+### Binary Tree Maximum Path Sum: (高频 Hard) 树形 DP 的经典。
 
 一个节点在路径中可以扮演两种角色：
 
@@ -1390,8 +1397,9 @@ var maxPathSum = function (root) {
 };
 ```
 
-- Validate Binary Search Tree: BST 性质的深度考查。
-  正如我们在处理 Kth Smallest Element 时提到的，BST 的中序遍历结果必然是严格递增的。我们可以利用这个性质进行校验。
+### Validate Binary Search Tree: BST 性质的深度考查。
+
+正如我们在处理 Kth Smallest Element 时提到的，BST 的中序遍历结果必然是严格递增的。我们可以利用这个性质进行校验。
 
 ```javascript
 var isValidBST = function (root) {
@@ -1418,7 +1426,7 @@ var isValidBST = function (root) {
 };
 ```
 
-- Kth Smallest Element in a BST: 利用 BST 的中序遍历有序性。
+### Kth Smallest Element in a BST: 利用 BST 的中序遍历有序性。
 
 使用栈进行中序遍历。这种方法的好处是可以在找到第 $k$ 个元素时立即停止，而不需要遍历整棵树，效率更高。
 
@@ -1457,7 +1465,7 @@ var kthSmallest = function (root, k) {
 
 图论考查搜索算法，回溯考查对状态树的搜索与剪枝。
 
-- Number of Islands: 网格类 DFS/BFS 的母题。
+### Number of Islands: 网格类 DFS/BFS 的母题。
 
 ```javascript
 /**
@@ -1504,8 +1512,9 @@ var numIslands = function (grid) {
 };
 ```
 
-- Course Schedule: 拓扑排序（判环）的经典应用。
-  我们通常使用 Kahn 算法 (基于 BFS) 来解决，它通过维护每个节点的“入度”（in-degree，即指向该节点的边数）来工作。
+### Course Schedule: 拓扑排序（判环）的经典应用。
+
+我们通常使用 Kahn 算法 (基于 BFS) 来解决，它通过维护每个节点的“入度”（in-degree，即指向该节点的边数）来工作。
 
 ```javascript
 /**
@@ -1551,8 +1560,9 @@ var canFinish = function (numCourses, prerequisites) {
 };
 ```
 
-- Clone Graph: 图的深拷贝（DFS/BFS）。
-  对于图这种具有环状结构的数据，最关键的挑战是避免死循环。我们需要一个哈希表 (Map) 来记录已经克隆过的节点。如果遇到已经克隆过的节点，直接返回克隆后的引用，而不是再次克隆。
+### Clone Graph: 图的深拷贝（DFS/BFS）。
+
+对于图这种具有环状结构的数据，最关键的挑战是避免死循环。我们需要一个哈希表 (Map) 来记录已经克隆过的节点。如果遇到已经克隆过的节点，直接返回克隆后的引用，而不是再次克隆。
 
 ```javascript
 /**
@@ -1587,8 +1597,9 @@ var cloneGraph = function (node) {
 };
 ```
 
-- Letter Combinations of a Phone Number: 回溯算法处理组合。
-  你可以将这个问题想象成一棵决策树：每一位数字代表树的一层，而该数字对应的每一个字母则是你从当前节点出发的分支。
+### Letter Combinations of a Phone Number: 回溯算法处理组合。
+
+你可以将这个问题想象成一棵决策树：每一位数字代表树的一层，而该数字对应的每一个字母则是你从当前节点出发的分支。
 
 ```javascript
 /**
@@ -1638,8 +1649,9 @@ var letterCombinations = function (digits) {
 };
 ```
 
-- Permutations: 回溯算法处理全排列。
-  为了实现这一点，我们需要在回溯过程中维护一个“已使用”的状态。
+### Permutations: 回溯算法处理全排列。
+
+为了实现这一点，我们需要在回溯过程中维护一个“已使用”的状态。
 
 ```javascript
 /**
@@ -1679,8 +1691,9 @@ var permute = function (nums) {
 };
 ```
 
-- Combination Sum: 回溯中“元素可重复选取”的处理。
-  为了解决去重问题，我们在递归时引入一个 start 索引，确保每一层递归只能从当前数字或之后的数字中选择，从而避免回头选择导致重复。
+### Combination Sum: 回溯中“元素可重复选取”的处理。
+
+为了解决去重问题，我们在递归时引入一个 start 索引，确保每一层递归只能从当前数字或之后的数字中选择，从而避免回头选择导致重复。
 
 ```javascript
 /**
@@ -1725,7 +1738,7 @@ var combinationSum = function (candidates, target) {
 
 这是区分候选人水平的关键，重点在于状态转移方程。
 
-- Climbing Stairs: 1D DP 的入门。
+### Climbing Stairs: 1D DP 的入门。
 
 Climbing Stairs这是一个经典的**动态规划（Dynamic Programming）**问题。要到达第 $n$ 级台阶，你只有两种可能的前一步：从第 $n-1$ 级台阶跨 1 步。从第 $n-2$ 级台阶跨 2 步。因此，到达第 $n$ 级的总方案数 $f(n)$ 满足：$f(n) = f(n-1) + f(n-2)$。这本质上就是斐波那契数列。
 
@@ -1755,7 +1768,7 @@ var climbStairs = function (n) {
 };
 ```
 
-- House Robber: 状态转移方程的构建练习。
+### House Robber: 状态转移方程的构建练习。
 
 这又是一个经典的**动态规划（Dynamic Programming）**问题。面对第 $i$ 间房子，你只有两个选择：抢劫它：那么你就不能抢第 $i-1$ 间房，总金额 = 第 $i-2$ 间房的最大金额 + 当前房子的钱。不抢它：那么你可以维持抢完第 $i-1$ 间房时的最大金额。因此，状态转移方程为：$$dp[i] = \max(dp[i-1], dp[i-2] + nums[i])$$
 
@@ -1787,7 +1800,7 @@ var rob = function (nums) {
 };
 ```
 
-- Coin Change: 完全背包问题的变体。
+### Coin Change: 完全背包问题的变体。
 
 我们需要找到凑成目标金额所需的最少硬币数。核心思路是：要凑出金额 i，我们可以尝试减去每一个面值的硬币 coin。那么凑成 i 的最少硬币数，就等于凑成 i - coin 的最少硬币数加 1。
 
@@ -1821,7 +1834,7 @@ var coinChange = function (coins, amount) {
 };
 ```
 
-- Longest Increasing Subsequence: $O(n^2)$ 与 $O(n \log n)$ 两种解法的对比。
+### Longest Increasing Subsequence: $O(n^2)$ 与 $O(n \log n)$ 两种解法的对比。
 
 定义 $dp[i]$ 为以 $nums[i]$ 结尾的最长递增子序列的长度。为了计算 $dp[i]$，我们需要回头看索引 $i$ 之前的所有元素 $j$，如果 $nums[i] > nums[j]$，说明 $nums[i]$ 可以接在以 $nums[j]$ 结尾的序列后面。
 
@@ -1854,7 +1867,7 @@ var lengthOfLIS = function (nums) {
 };
 ```
 
-- Longest Palindromic Substring: 动态规划或中心扩展法。
+### Longest Palindromic Substring: 动态规划或中心扩展法。
 
 解决最长回文子串最直观且高效的方法是中心扩展法（Expand Around Center）。回文串的特性是中心对称，因此我们可以遍历字符串中的每一个字符（以及每两个字符中间的间隙），将其作为中心向两边扩展。
 
@@ -1901,7 +1914,7 @@ var longestPalindrome = function (s) {
 };
 ```
 
-- Edit Distance: (必考 Hard) 字符串编辑的经典 DP。
+### Edit Distance: (必考 Hard) 字符串编辑的经典 DP。
 
 我们需要计算将 word1 转换成 word2 的最少步数。核心思路是：通过比较两个字符串的末尾字符，将大问题拆解为子问题。
 
@@ -1948,7 +1961,7 @@ var minDistance = function (word1, word2) {
 
 处理大规模数据和最值的利器。
 
-- Search in Rotated Sorted Array: 二分查找的变形应用。
+### Search in Rotated Sorted Array: 二分查找的变形应用。
 
 虽然数组被旋转了，但如果我们在中点 mid 将其切开，一半必定是有序的，而另一半包含旋转点。
 
@@ -1992,7 +2005,7 @@ var search = function (nums, target) {
 };
 ```
 
-- Find First and Last Position of Element in Sorted Array: 二分查找寻找边界。
+### Find First and Last Position of Element in Sorted Array: 二分查找寻找边界。
 
 要在 $O(\log n)$ 的时间内解决这个问题，最直观的方法是进行两次二分查找：一次寻找目标值的“左边界”，一次寻找“右边界”。
 
@@ -2043,7 +2056,7 @@ var searchRange = function (nums, target) {
 };
 ```
 
-- Kth Largest Element in an Array: 堆排序或快速选择（Quickselect）。
+### Kth Largest Element in an Array: 堆排序或快速选择（Quickselect）。
 
 在快排中，每次 partition 后，基准值 (pivot) 都会落在它最终排序后的正确位置。如果这个位置正好是 $n-k$，我们就找到了答案。
 
@@ -2080,7 +2093,7 @@ var findKthLargest = function (nums, k) {
 };
 ```
 
-- Find Median from Data Stream: (高频 Hard) 对顶堆（双堆法）实时求中位数。
+### Find Median from Data Stream: (高频 Hard) 对顶堆（双堆法）实时求中位数。
 
 我们将数据分成两部分：
 
