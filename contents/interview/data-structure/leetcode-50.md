@@ -1,3 +1,7 @@
+---
+short_title: LeetCode 50
+---
+
 # LeetCode
 
 ## 1. 数组与双指针 (8 题)
@@ -51,30 +55,30 @@ var merge = function (nums1, m, nums2, n) {
 
 ```javascript
 /**
- * @param {number[]} nums - 升序排列的整数数组
- * @return {number} - 返回唯一元素的个数 k
+ * @param {number[]} nums
+ * @return {number}
  */
 var removeDuplicates = function (nums) {
-  // 如果数组为空，直接返回 0
-  if (nums.length === 0) return 0;
+  // 如果数组长度小于等于 2，每个元素最多出现两次的条件天然满足
+  if (nums.length <= 2) return nums.length;
 
-  // k 是慢指针，指向当前已确定的唯一元素序列的末尾
-  // 因为数组是有序的，第一个元素 nums[0] 必然是唯一的，所以从索引 0 开始
-  let k = 0;
+  // k 是“慢指针”，记录当前有效序列的长度
+  // 因为前两个元素无论如何都会保留，所以从下标 2 开始
+  let k = 2;
 
-  // i 是快指针，从第二个元素开始遍历数组
-  for (let i = 1; i < nums.length; i++) {
-    // 如果快指针指向的元素与慢指针指向的元素不同
-    // 说明找到了一个新的唯一元素
-    if (nums[i] !== nums[k]) {
-      // 慢指针前移一位，并将新元素复制到该位置
-      k++;
+  // i 是“快指针”，遍历整个数组
+  for (let i = 2; i < nums.length; i++) {
+    // 核心逻辑：
+    // 检查当前元素 nums[i] 是否与有效序列中倒数第二个元素 nums[k-2] 相同
+    if (nums[i] !== nums[k - 2]) {
+      // 如果不同，说明 nums[i] 可以放入有效序列
       nums[k] = nums[i];
+      k++;
     }
   }
 
-  // 返回唯一元素的个数，即索引 k + 1
-  return k + 1;
+  // 返回有效长度 k，nums 的前 k 个元素即为结果
+  return k;
 };
 ```
 
@@ -786,8 +790,9 @@ var insert = function (intervals, newInterval) {
 
 链表重点在于指针操作，栈重点在于匹配和模拟。
 
-- Valid Parentheses: 栈的入门必修课。
-  由于括号必须以“后进先出”的顺序匹配（即最后打开的左括号必须最先被闭合），栈成为了处理此类问题的完美工具。
+### Valid Parentheses: 栈的入门必修课。
+
+由于括号必须以“后进先出”的顺序匹配（即最后打开的左括号必须最先被闭合），栈成为了处理此类问题的完美工具。
 
 ```javascript
 /**
@@ -960,6 +965,57 @@ var addTwoNumbers = function (l1, l2) {
 };
 ```
 
+### Reverse Linked List: 反转链表的基础知识，面试官最看重这一题。
+
+```javascript
+/**
+ * 迭代法反转链表
+ * @param {ListNode} head
+ * @return {ListNode}
+ */
+var reverseList = function (head) {
+  let prev = null; // 初始化前驱节点为 null
+  let curr = head; // 从头节点开始
+
+  while (curr !== null) {
+    let nextTemp = curr.next; // 1. 先把“明天”存起来
+    curr.next = prev; // 2. 把“今天”的指针指向“昨天”（反转）
+
+    // 3. 整体向前挪一步
+    prev = curr; // “昨天”变成“今天”
+    curr = nextTemp; // “今天”变成“明天”
+  }
+
+  return prev; // 最后 prev 会停在原链表的尾部，也就是新链表的头部
+};
+```
+
+```javascript
+/**
+ * 递归法反转链表
+ * @param {ListNode} head
+ * @return {ListNode}
+ */
+var reverseList = function (head) {
+  // 递归终止条件：如果是空链表或者已经到了最后一个节点
+  if (head === null || head.next === null) {
+    return head;
+  }
+
+  // 这里的 newHead 永远是原链表的最后一个节点
+  const newHead = reverseList(head.next);
+
+  // 核心逻辑：让“下一个节点”指向“我自己”
+  // 比如 4 -> 5 变成了 4 <- 5
+  head.next.next = head;
+
+  // 把原本指向 5 的指针断开
+  head.next = null;
+
+  return newHead;
+};
+```
+
 ### Reverse Linked List II: 局部反转链表，考察指针断开与重连的细节。
 
 它的难点在于：你不仅要反转中间那段链表，还要把反转后的部分与原链表的**前驱（Predecessor）和后继（Successor）**重新缝合起来。
@@ -1052,8 +1108,9 @@ var copyRandomList = function (head) {
 哨兵节点 (Dummy Nodes)：使用 head 和 tail 两个伪节点，可以极大简化边界处理（如处理空链表）。
 
 ```javascript
+// 1. 节点类：必须是双向的
 class Node {
-  constructor(key, value) {
+  constructor(key = 0, value = 0) {
     this.key = key;
     this.value = value;
     this.prev = null;
@@ -1061,82 +1118,66 @@ class Node {
   }
 }
 
-/**
- * @param {number} capacity
- */
-var LRUCache = function (capacity) {
-  this.capacity = capacity;
-  this.map = new Map(); // key -> Node
+class LRUCache {
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.map = new Map(); // key -> Node
+    // 使用伪头部和伪尾部，可以避免很多判空逻辑
+    this.head = new Node();
+    this.tail = new Node();
+    this.head.next = this.tail;
+    this.tail.prev = this.head;
+  }
 
-  // 初始化双向链表哨兵
-  this.head = new Node(0, 0);
-  this.tail = new Node(0, 0);
-  this.head.next = this.tail;
-  this.tail.prev = this.head;
-};
+  // --- 辅助方法：面试官最看重这两个 ---
 
-/** * @param {number} key
- * @return {number}
- */
-LRUCache.prototype.get = function (key) {
-  if (this.map.has(key)) {
+  // 把一个存在的节点挪到最前面（最近使用）
+  moveToHead(node) {
+    this.removeNode(node); // 先从当前位置断开
+    this.addToHead(node); // 再插到 dummy head 后面
+  }
+
+  // 真正的物理删除
+  removeNode(node) {
+    node.prev.next = node.next;
+    node.next.prev = node.prev;
+  }
+
+  // 插入到头部的固定逻辑
+  addToHead(node) {
+    node.next = this.head.next;
+    node.prev = this.head;
+    this.head.next.prev = node;
+    this.head.next = node;
+  }
+
+  // --- 核心接口 ---
+
+  get(key) {
+    if (!this.map.has(key)) return -1;
     const node = this.map.get(key);
-    this._moveToHead(node); // 访问后标记为“最近使用”
+    this.moveToHead(node); // 访问即更新：移到头部
     return node.value;
   }
-  return -1;
-};
 
-/** * @param {number} key
- * @param {number} value
- * @return {void}
- */
-LRUCache.prototype.put = function (key, value) {
-  if (this.map.has(key)) {
-    const node = this.map.get(key);
-    node.value = value;
-    this._moveToHead(node);
-  } else {
-    const newNode = new Node(key, value);
-    this.map.set(key, newNode);
-    this._addNode(newNode);
-
-    if (this.map.size > this.capacity) {
-      const lru = this._popTail();
-      this.map.delete(lru.key);
+  put(key, value) {
+    if (this.map.has(key)) {
+      const node = this.map.get(key);
+      node.value = value;
+      this.moveToHead(node); // 更新值并移到头部
+    } else {
+      const newNode = new Node(key, value);
+      this.map.set(key, newNode);
+      this.addToHead(newNode);
+      if (this.map.size > this.capacity) {
+        // 删掉最久没用的（尾部前面的那个）
+        const last = this.tail.prev;
+        this.removeNode(last);
+        this.map.delete(last.key); // 别忘了从 map 里也删掉
+      }
     }
   }
-};
-
-// --- 内部辅助方法 ---
-
-LRUCache.prototype._addNode = function (node) {
-  // 始终插入到 head 的后面
-  node.prev = this.head;
-  node.next = this.head.next;
-  this.head.next.prev = node;
-  this.head.next = node;
-};
-
-LRUCache.prototype._removeNode = function (node) {
-  // 将节点从链表中摘除
-  const prev = node.prev;
-  const next = node.next;
-  prev.next = next;
-  next.prev = prev;
-};
-
-LRUCache.prototype._moveToHead = function (node) {
-  this._removeNode(node);
-  this._addNode(node);
-};
-
-LRUCache.prototype._popTail = function () {
-  // 弹出 tail 前面的那个真实节点
-  const res = this.tail.prev;
-  this._removeNode(res);
-  return res;
-};
+}
 ```
 
 ## 5. 二叉树 (8 题)
@@ -1702,35 +1743,36 @@ var permute = function (nums) {
  * @return {number[][]}
  */
 var combinationSum = function (candidates, target) {
-  const result = [];
+  const res = [];
+  const path = [];
 
-  // 排序不是必须的，但排序后可以进行“剪枝”优化，提前结束不必要的搜索
+  // 排序可以方便后续剪枝（优化性能）
   candidates.sort((a, b) => a - b);
 
-  const backtrack = (remaining, path, start) => {
-    // 1. 终止条件：如果剩余目标值为 0，说明找到了一组解
-    if (remaining === 0) {
-      result.push([...path]);
+  const backtrack = (remain, start) => {
+    // 1. 终止条件：目标值减到 0，说明凑齐了
+    if (remain === 0) {
+      res.push([...path]);
       return;
     }
 
     for (let i = start; i < candidates.length; i++) {
-      // 2. 剪枝优化：如果当前数字已经大于剩余目标，由于数组已排序，后续数字肯定也大
-      if (candidates[i] > remaining) break;
+      // 2. 剪枝优化：如果当前数字已经大于剩余目标，后面的数字更大，没必要再看了
+      if (remain < candidates[i]) break;
 
-      // 3. 做选择
+      // 做选择
       path.push(candidates[i]);
 
-      // 4. 递归：由于元素可以重复使用，下一层的 start 依然是 i，而不是 i + 1
-      backtrack(remaining - candidates[i], path, i);
+      // 3. 递归：传入 i 而不是 i + 1，表示同一个数字可以重复使用
+      backtrack(remain - candidates[i], i);
 
-      // 5. 撤销选择（回溯）
+      // 回溯：撤销选择
       path.pop();
     }
   };
 
-  backtrack(target, [], 0);
-  return result;
+  backtrack(target, 0);
+  return res;
 };
 ```
 
@@ -2010,53 +2052,70 @@ var search = function (nums, target) {
 要在 $O(\log n)$ 的时间内解决这个问题，最直观的方法是进行两次二分查找：一次寻找目标值的“左边界”，一次寻找“右边界”。
 
 ```javascript
-/**
- * @param {number[]} nums
- * @param {number} target
- * @return {number[]}
- */
 var searchRange = function (nums, target) {
-  // 查找第一个等于 target 的位置
-  const findFirst = (nums, target) => {
+  const findLeft = (nums, target) => {
     let left = 0,
       right = nums.length - 1;
-    let index = -1;
     while (left <= right) {
-      let mid = Math.floor((left + right) / 2);
-      if (nums[mid] >= target) {
-        // 如果中间值大于等于目标，继续向左找，看前面还有没有
-        right = mid - 1;
-      } else {
-        left = mid + 1;
-      }
-      if (nums[mid] === target) index = mid;
+      let mid = left + Math.floor((right - left) / 2);
+      if (nums[mid] < target) left = mid + 1;
+      else right = mid - 1; // 即使相等也往左挤
     }
-    return index;
+    // 检查越界和是否真的等于 target
+    if (left >= nums.length || nums[left] !== target) return -1;
+    return left;
   };
 
-  // 查找最后一个等于 target 的位置
-  const findLast = (nums, target) => {
+  const findRight = (nums, target) => {
     let left = 0,
       right = nums.length - 1;
-    let index = -1;
     while (left <= right) {
-      let mid = Math.floor((left + right) / 2);
-      if (nums[mid] <= target) {
-        // 如果中间值小于等于目标，继续向右找，看后面还有没有
-        left = mid + 1;
-      } else {
-        right = mid - 1;
-      }
-      if (nums[mid] === target) index = mid;
+      let mid = left + Math.floor((right - left) / 2);
+      if (nums[mid] <= target)
+        left = mid + 1; // 即使相等也往右挤
+      else right = mid - 1;
     }
-    return index;
+    // 检查越界和是否真的等于 target
+    // 注意：找右边界时，right 才是指向最后一个目标值的位置
+    if (right < 0 || nums[right] !== target) return -1;
+    return right;
   };
 
-  return [findFirst(nums, target), findLast(nums, target)];
+  return [findLeft(nums, target), findRight(nums, target)];
 };
 ```
 
 ### Kth Largest Element in an Array: 堆排序或快速选择（Quickselect）。
+
+基本做法：
+
+```javascript
+var findKthLargest = function (nums, k) {
+  const pivot = nums[0]; // 简单选第一个
+  const left = [];
+  const right = [];
+  const mid = [];
+
+  for (const x of nums) {
+    if (x > pivot)
+      left.push(x); // 比基准大的放左边（降序思考）
+    else if (x < pivot)
+      right.push(x); // 比基准小的放右边
+    else mid.push(x); // 等于基准的
+  }
+
+  // 1. 第 K 大在左边
+  if (k <= left.length) {
+    return findKthLargest(left, k);
+  }
+  // 2. 第 K 大就在中间（基准本身）
+  if (k <= left.length + mid.length) {
+    return pivot;
+  }
+  // 3. 第 K 大在右边（注意要减去左边和中间已经消耗掉的排名）
+  return findKthLargest(right, k - left.length - mid.length);
+};
+```
 
 在快排中，每次 partition 后，基准值 (pivot) 都会落在它最终排序后的正确位置。如果这个位置正好是 $n-k$，我们就找到了答案。
 
@@ -2140,4 +2199,133 @@ class MedianFinder {
     }
   }
 }
+```
+
+## 9. 基础算法
+
+### Merge Sort
+
+```javascript
+/**
+ * 归并排序（Merge Sort）
+ * 思想：
+ * 1. 把数组不断从中间分成两半
+ * 2. 分到只剩一个元素（天然有序）
+ * 3. 再把两个有序数组合并起来
+ */
+
+function mergeSort(arr) {
+  // 递归终止条件：数组长度 <= 1 就已经有序
+  if (arr.length <= 1) {
+    return arr;
+  }
+
+  // 1️⃣ 从中间切开
+  const mid = Math.floor(arr.length / 2);
+
+  // 2️⃣ 分成左右两部分
+  const left = arr.slice(0, mid);
+  const right = arr.slice(mid);
+
+  // 3️⃣ 递归排序左右两边
+  const sortedLeft = mergeSort(left);
+  const sortedRight = mergeSort(right);
+
+  // 4️⃣ 合并两个有序数组
+  return merge(sortedLeft, sortedRight);
+}
+
+/**
+ * 合并两个有序数组
+ * 核心逻辑：双指针
+ */
+function merge(left, right) {
+  const result = [];
+
+  let i = 0; // 左数组指针
+  let j = 0; // 右数组指针
+
+  // 两边都还有值时，比较大小
+  while (i < left.length && j < right.length) {
+    if (left[i] < right[j]) {
+      result.push(left[i]);
+      i++;
+    } else {
+      result.push(right[j]);
+      j++;
+    }
+  }
+
+  // 把剩余元素直接拼接（必然有一边已经空了）
+  return result.concat(left.slice(i)).concat(right.slice(j));
+}
+```
+
+### Quick Sort
+
+```javascript
+/**
+ * 快速排序（Quick Sort）
+ * 思想：
+ * 1. 选一个基准值（pivot）
+ * 2. 把小的放左边，大的放右边
+ * 3. 递归排序左右两边
+ */
+
+function quickSort(arr) {
+  // 递归终止条件
+  if (arr.length <= 1) {
+    return arr;
+  }
+
+  // 1️⃣ 选基准（这里选中间）
+  const pivotIndex = Math.floor(arr.length / 2);
+  const pivot = arr[pivotIndex];
+
+  const left = [];
+  const right = [];
+
+  // 2️⃣ 分区（partition）
+  for (let i = 0; i < arr.length; i++) {
+    if (i === pivotIndex) continue; // 跳过基准
+
+    if (arr[i] < pivot) {
+      left.push(arr[i]);
+    } else {
+      right.push(arr[i]);
+    }
+  }
+
+  // 3️⃣ 递归
+  return quickSort(left).concat(pivot, quickSort(right));
+}
+```
+
+### Binary Search
+
+```javascript
+/**
+ * @param {number[]} nums - 升序数组
+ * @param {number} target - 目标值
+ */
+var binarySearch = function (nums, target) {
+  let left = 0;
+  let right = nums.length - 1; // 1. 闭区间 [left, right]
+
+  while (left <= right) {
+    // 2. 因为是闭区间，等于号是有意义的
+    // 防止大数溢出，等同于 Math.floor((left + right) / 2)
+    let mid = left + Math.floor((right - left) / 2);
+
+    if (nums[mid] === target) {
+      return mid; // 找到了
+    } else if (nums[mid] < target) {
+      left = mid + 1; // 3. 目标在右边，左边界右移
+    } else {
+      right = mid - 1; // 4. 目标在左边，右边界左移
+    }
+  }
+
+  return -1; // 没找到
+};
 ```

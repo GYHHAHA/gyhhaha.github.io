@@ -1,4 +1,3 @@
-# Foundations
-
-> TODO: Write content here.
-
+---
+short_title: Foundations
+---

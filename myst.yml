@@ -64,7 +64,7 @@ project:
         - file: ./contents/backend/python/index.md
           children:
             - file: ./contents/backend/python/basic.md
-            - file: ./contents/backend/python/fastapi.md
+            - file: ./contents/backend/python/django.md
     - file: ./contents/infra/index.md
       children:
         - file: ./contents/infra/devtools/index.md
@@ -101,7 +101,9 @@ project:
             - file: ./contents/interview/foundations/os.md
             - file: ./contents/interview/foundations/distributed.md
             - file: ./contents/interview/foundations/design.md
-        - file: ./contents/interview/data-structures/index.md
+        - file: ./contents/interview/data-structure/index.md
+          children:
+            - file: ./contents/interview/data-structure/leetcode-50.md
         - file: ./contents/interview/behavioral/index.md
     - file: ./contents/harpsichord/index.md
 site:
@@ -129,6 +131,8 @@ site:
           url: /contents/backend/spring
         - title: Node.js
           url: /contents/backend/nodejs
+        - title: Python
+          url: /contents/backend/python
     - title: Infra
       url: /contents/infra
       children:
@@ -147,8 +151,8 @@ site:
       children:
         - title: Foundations
           url: /contents/interview/foundations
-        - title: Data Structures
-          url: /contents/interview/data-structures
+        - title: Data Structure
+          url: /contents/interview/data-structure
         - title: Bahavioral
           url: /contents/interview/behavioral
     - title: Harpsichord
