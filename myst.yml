@@ -27,6 +27,36 @@ project:
             - file: ./contents/frontend/react/router.md
             - file: ./contents/frontend/react/status.md
             - file: ./contents/frontend/react/zod.md
+        - file: ./contents/frontend/tanstack/index.md
+          children:
+            - file: ./contents/frontend/tanstack/routing.md
+            - file: ./contents/frontend/tanstack/execution.md
+            - file: ./contents/frontend/tanstack/patterns.md
+            # - file: ./contents/frontend/tanstack/import.md
+            - file: ./contents/frontend/tanstack/env.md
+            - file: ./contents/frontend/tanstack/functions.md
+            # - file: ./contents/frontend/tanstack/staticfunctions.md
+            - file: ./contents/frontend/tanstack/envfunctions.md
+            - file: ./contents/frontend/tanstack/middleware.md
+            - file: ./contents/frontend/tanstack/errors.md
+            - file: ./contents/frontend/tanstack/routes.md
+            - file: ./contents/frontend/tanstack/hydration.md
+            - file: ./contents/frontend/tanstack/ssr.md
+            - file: ./contents/frontend/tanstack/spa.md
+            - file: ./contents/frontend/tanstack/static.md
+            - file: ./contents/frontend/tanstack/isr.md
+            - file: ./contents/frontend/tanstack/serverentry.md
+            # - file: ./contents/frontend/tanstack/cdn.md
+            - file: ./contents/frontend/tanstack/cliententry.md
+            - file: ./contents/frontend/tanstack/hosting.md
+            - file: ./contents/frontend/tanstack/authoverview.md
+            - file: ./contents/frontend/tanstack/auth.md
+            - file: ./contents/frontend/tanstack/databases.md
+            - file: ./contents/frontend/tanstack/observability.md
+            - file: ./contents/frontend/tanstack/alias.md
+            - file: ./contents/frontend/tanstack/tailwind.md
+            - file: ./contents/frontend/tanstack/markdown.md
+            - file: ./contents/frontend/tanstack/seo.md
     - file: ./contents/backend/index.md
       children:
         - file: ./contents/backend/java/index.md
@@ -118,6 +148,8 @@ site:
           url: /contents/frontend/javascript
         - title: React
           url: /contents/frontend/react
+        - title: TanStack
+          url: /contents/frontend/tanstack
     - title: Backend
       url: /contents/backend
       children:
