@@ -1,5 +1,5 @@
 ---
-short_title: Markdown 渲染
+short_title: 可观测性
 ---
 
 # 可观测性 (Observability)

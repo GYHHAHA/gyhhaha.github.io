@@ -61,8 +61,6 @@ short_title: 身份验证（概述）
 - 需要会话存储（数据库、Redis）。
 - 适用于需要立即控制会话撤销的应用。
 
-[Image comparing HTTP-only cookies, JWT tokens, and server-side session storage architectures]
-
 ---
 
 ### 路由保护架构 (Route Protection Architecture)

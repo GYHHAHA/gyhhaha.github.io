@@ -29,34 +29,36 @@ project:
             - file: ./contents/frontend/react/zod.md
         - file: ./contents/frontend/tanstack/index.md
           children:
-            - file: ./contents/frontend/tanstack/routing.md
-            - file: ./contents/frontend/tanstack/execution.md
-            - file: ./contents/frontend/tanstack/patterns.md
-            # - file: ./contents/frontend/tanstack/import.md
-            - file: ./contents/frontend/tanstack/env.md
-            - file: ./contents/frontend/tanstack/functions.md
-            # - file: ./contents/frontend/tanstack/staticfunctions.md
-            - file: ./contents/frontend/tanstack/envfunctions.md
-            - file: ./contents/frontend/tanstack/middleware.md
-            - file: ./contents/frontend/tanstack/errors.md
-            - file: ./contents/frontend/tanstack/routes.md
-            - file: ./contents/frontend/tanstack/hydration.md
-            - file: ./contents/frontend/tanstack/ssr.md
-            - file: ./contents/frontend/tanstack/spa.md
-            - file: ./contents/frontend/tanstack/static.md
-            - file: ./contents/frontend/tanstack/isr.md
-            - file: ./contents/frontend/tanstack/serverentry.md
-            # - file: ./contents/frontend/tanstack/cdn.md
-            - file: ./contents/frontend/tanstack/cliententry.md
-            - file: ./contents/frontend/tanstack/hosting.md
-            - file: ./contents/frontend/tanstack/authoverview.md
-            - file: ./contents/frontend/tanstack/auth.md
-            - file: ./contents/frontend/tanstack/databases.md
-            - file: ./contents/frontend/tanstack/observability.md
-            - file: ./contents/frontend/tanstack/alias.md
-            - file: ./contents/frontend/tanstack/tailwind.md
-            - file: ./contents/frontend/tanstack/markdown.md
-            - file: ./contents/frontend/tanstack/seo.md
+            - file: ./contents/frontend/tanstack/starter/index.md
+              children:
+                - file: ./contents/frontend/tanstack/starter/routing.md
+                - file: ./contents/frontend/tanstack/starter/execution.md
+                - file: ./contents/frontend/tanstack/starter/patterns.md
+                # - file: ./contents/frontend/tanstack/starter/import.md
+                - file: ./contents/frontend/tanstack/starter/env.md
+                - file: ./contents/frontend/tanstack/starter/functions.md
+                # - file: ./contents/frontend/tanstack/starter/staticfunctions.md
+                - file: ./contents/frontend/tanstack/starter/envfunctions.md
+                - file: ./contents/frontend/tanstack/starter/middleware.md
+                - file: ./contents/frontend/tanstack/starter/errors.md
+                - file: ./contents/frontend/tanstack/starter/routes.md
+                - file: ./contents/frontend/tanstack/starter/hydration.md
+                - file: ./contents/frontend/tanstack/starter/ssr.md
+                - file: ./contents/frontend/tanstack/starter/spa.md
+                - file: ./contents/frontend/tanstack/starter/static.md
+                - file: ./contents/frontend/tanstack/starter/isr.md
+                - file: ./contents/frontend/tanstack/starter/serverentry.md
+                # - file: ./contents/frontend/tanstack/starter/cdn.md
+                - file: ./contents/frontend/tanstack/starter/cliententry.md
+                - file: ./contents/frontend/tanstack/starter/hosting.md
+                - file: ./contents/frontend/tanstack/starter/authoverview.md
+                - file: ./contents/frontend/tanstack/starter/auth.md
+                - file: ./contents/frontend/tanstack/starter/databases.md
+                - file: ./contents/frontend/tanstack/starter/observability.md
+                - file: ./contents/frontend/tanstack/starter/alias.md
+                - file: ./contents/frontend/tanstack/starter/tailwind.md
+                - file: ./contents/frontend/tanstack/starter/markdown.md
+                - file: ./contents/frontend/tanstack/starter/seo.md
     - file: ./contents/backend/index.md
       children:
         - file: ./contents/backend/java/index.md
