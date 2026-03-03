@@ -29,6 +29,41 @@ project:
             - file: ./contents/frontend/react/zod.md
         - file: ./contents/frontend/tanstack/index.md
           children:
+            - file: ./contents/frontend/tanstack/router/index.md
+              children:
+                - file: ./contents/frontend/tanstack/router/routing-concepts.md
+                - file: ./contents/frontend/tanstack/router/route-trees.md
+                - file: ./contents/frontend/tanstack/router/route-matching.md
+                - file: ./contents/frontend/tanstack/router/file-based-routing.md
+                - file: ./contents/frontend/tanstack/router/virtual-file-routes.md
+                - file: ./contents/frontend/tanstack/router/file-naming-conventions.md
+                - file: ./contents/frontend/tanstack/router/code-splitting.md
+                - file: ./contents/frontend/tanstack/router/automatic-code-splitting.md
+                - file: ./contents/frontend/tanstack/router/creating-a-router.md
+                - file: ./contents/frontend/tanstack/router/outlets.md
+                - file: ./contents/frontend/tanstack/router/navigation.md
+                - file: ./contents/frontend/tanstack/router/path-params.md
+                - file: ./contents/frontend/tanstack/router/search-params.md
+                - file: ./contents/frontend/tanstack/router/link-options.md
+                - file: ./contents/frontend/tanstack/router/custom-link.md
+                - file: ./contents/frontend/tanstack/router/data-loading.md
+                - file: ./contents/frontend/tanstack/router/deferred-data-loading.md
+                - file: ./contents/frontend/tanstack/router/external-data-loading.md
+                - file: ./contents/frontend/tanstack/router/data-mutations.md
+                - file: ./contents/frontend/tanstack/router/type-safety.md
+                - file: ./contents/frontend/tanstack/router/type-utilities.md
+                - file: ./contents/frontend/tanstack/router/preloading.md
+                - file: ./contents/frontend/tanstack/router/document-head-management.md
+                - file: ./contents/frontend/tanstack/router/route-masking.md
+                - file: ./contents/frontend/tanstack/router/navigation-blocking.md
+                - file: ./contents/frontend/tanstack/router/custom-search-param-serialization.md
+                - file: ./contents/frontend/tanstack/router/history-types.md
+                - file: ./contents/frontend/tanstack/router/router-context.md
+                - file: ./contents/frontend/tanstack/router/not-found-errors.md
+                - file: ./contents/frontend/tanstack/router/authenticated-routes.md
+                - file: ./contents/frontend/tanstack/router/scroll-restoration.md
+                - file: ./contents/frontend/tanstack/router/static-route-data.md
+                - file: ./contents/frontend/tanstack/router/render-optimizations.md
             - file: ./contents/frontend/tanstack/starter/index.md
               children:
                 - file: ./contents/frontend/tanstack/starter/routing.md
