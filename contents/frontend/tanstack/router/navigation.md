@@ -103,9 +103,9 @@ function Comp() {
 
 ---
 
-### `MapsOptions` 接口
+### `NavigateOptions` 接口
 
-这是继承自 `ToOptions` 的核心 `MapsOptions` 接口。任何实际执行导航操作的 API 都会使用这个接口：
+这是继承自 `ToOptions` 的核心 `NavigateOptions` 接口。任何实际执行导航操作的 API 都会使用这个接口：
 
 ```ts
 export type NavigateOptions<
@@ -136,13 +136,13 @@ export type NavigateOptions<
 };
 ```
 
-`MapsOptions` 包含了 `ToOptions` 的所有字段，包括 `mask`。
+`NavigateOptions` 包含了 `ToOptions` 的所有字段，包括 `mask`。
 
 ---
 
 ### `LinkOptions` 接口
 
-任何实际渲染 `<a>` 标签的地方，都会提供扩展自 `MapsOptions` 的 `LinkOptions` 接口：
+任何实际渲染 `<a>` 标签的地方，都会提供扩展自 `NavigateOptions` 的 `LinkOptions` 接口：
 
 ```tsx
 export type LinkOptions<
@@ -172,7 +172,7 @@ export type LinkOptions<
 };
 ```
 
-由于 `LinkOptions` 继承了 `MapsOptions`，它同样支持 `mask` 功能。
+由于 `LinkOptions` 继承了 `NavigateOptions`，它同样支持 `mask` 功能。
 
 ## 导航 API (Navigation API)
 
@@ -785,7 +785,7 @@ const link = (
 
 > ⚠️ 由于 `Link` 组件内置了对 `href` 的支持、支持 `cmd/ctrl + 点击` 以及激活/非激活状态的处理，建议对于任何用户可交互的元素（如链接、按钮），优先使用 `Link` 组件。然而，在某些情况下，`useNavigate` 对于处理由**副作用**引起的导航（例如异步操作成功后的跳转）是必不可少的。
 
-`useNavigate` 钩子返回一个 `Maps` 函数，可用于执行命令式导航。这是在副作用中跳转路由的绝佳方式。示例如下：
+`useNavigate` 钩子返回一个 `Navigate` 函数，可用于执行命令式导航。这是在副作用中跳转路由的绝佳方式。示例如下：
 
 ```tsx
 function Component() {
@@ -810,17 +810,17 @@ function Component() {
 }
 ```
 
-> 🧠 如上所示，你可以在钩子调用时传递 `from` 选项。虽然在每次调用返回的 `Maps` 函数时也可以传递，但在这里统一设置可以减少出错，还能少打几个字！
+> 🧠 如上所示，你可以在钩子调用时传递 `from` 选项。虽然在每次调用返回的 `Navigate` 函数时也可以传递，但在这里统一设置可以减少出错，还能少打几个字！
 
-### `Maps` 选项
+### `Navigate` 选项
 
-`useNavigate` 返回的 `Maps` 函数接受 [`MapsOptions` 接口](navigateoptions-interface) 定义的所有参数。
+`useNavigate` 返回的 `Navigate` 函数接受 [`NavigateOptions` 接口](navigateoptions-interface) 定义的所有参数。
 
 ---
 
-## `Maps` 组件
+## `Navigate` 组件
 
-偶尔你可能需要在组件**挂载（Mount）**时立即执行导航。你的第一直觉可能是想用 `useNavigate` 配合一个立即执行的副作用（如 `useEffect`），但其实没必要。你可以直接渲染 `Maps` 组件来实现同样的效果：
+偶尔你可能需要在组件**挂载（Mount）**时立即执行导航。你的第一直觉可能是想用 `useNavigate` 配合一个立即执行的副作用（如 `useEffect`），但其实没必要。你可以直接渲染 `Navigate` 组件来实现同样的效果：
 
 ```tsx
 function Component() {
@@ -828,13 +828,13 @@ function Component() {
 }
 ```
 
-你可以把 `Maps` 组件看作是组件挂载即跳转的一种声明式方式。它是处理“仅限客户端”重定向的好帮手。但请记住，它**绝对不能**替代在服务器端进行的负责任的重定向处理。
+你可以把 `Navigate` 组件看作是组件挂载即跳转的一种声明式方式。它是处理“仅限客户端”重定向的好帮手。但请记住，它**绝对不能**替代在服务器端进行的负责任的重定向处理。
 
 ---
 
 ## `router.navigate` 方法
 
-`router.navigate` 方法与 `useNavigate` 返回的函数功能一致，也接受相同的 [`MapsOptions` 接口](navigateoptions-interface)。与 `useNavigate` 钩子不同的是，只要你能访问到 `router` 实例，它在**任何地方**都可用，因此它是从应用任何角落（甚至是框架外部）执行命令式导航的利器。
+`router.navigate` 方法与 `useNavigate` 返回的函数功能一致，也接受相同的 [`NavigateOptions` 接口](navigateoptions-interface)。与 `useNavigate` 钩子不同的是，只要你能访问到 `router` 实例，它在**任何地方**都可用，因此它是从应用任何角落（甚至是框架外部）执行命令式导航的利器。
 
 ---
 
