@@ -491,9 +491,9 @@ const PageSelector = () => {
 
 ## 命令式导航 API
 
-### `useNavigate()`, `Maps({ search })`
+### `useNavigate()`, `Navigate({ search })`
 
-`Maps` 函数也接受 `search` 选项，其工作方式与 `<Link />` 上的 `search` 属性完全相同：
+`Navigate` 函数也接受 `search` 选项，其工作方式与 `<Link />` 上的 `search` 属性完全相同：
 
 ```tsx title="src/routes/shop/products.tsx"
 export const Route = createFileRoute("/shop/products/$productId")({
@@ -521,7 +521,7 @@ const ProductList = () => {
 
 ### `router.navigate({ search })`
 
-`router.navigate` 函数的工作方式与上述 `useNavigate`/`Maps` 钩子/函数完全相同。
+`router.navigate` 函数的工作方式与上述 `useNavigate`/`Navigate` 钩子/函数完全相同。
 
 ### `<Navigate search />` 组件
 
