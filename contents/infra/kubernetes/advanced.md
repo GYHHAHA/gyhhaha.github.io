@@ -158,6 +158,96 @@ spec:
               - "echo 'Pod is terminating...' && sleep 10"
 ```
 
+### InitContainer
+
+InitContainer（初始化容器）是在 Pod 中主容器启动之前运行的特殊容器。它先执行完初始化工作，成功退出后，主容器才会启动。如果 InitContainer 失败，Kubernetes 会反复重启它，直到成功为止，主容器绝不会提前启动。
+
+InitContainer 和 postStart 的区别：
+
+- 执行顺序的确定性：InitContainer 一定在主容器启动之前执行完毕，有严格保证。而 postStart 是和主容器的 EntryPoint 几乎同时触发的，没办法保证谁先执行完。
+- 能力不同：postStart 只是主容器内执行一个 hook 命令，受限于主容器的镜像环境。InitContainer 是一个独立的容器，可以用完全不同的镜像，安装不同的工具，执行更复杂的操作。
+- 适用场景：postStart 适合轻量级的操作，比如发个通知。InitContainer 适合有依赖关系的初始化，比如等待数据库就绪、下载配置文件、执行数据迁移等。
+
+## 完整示例
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app
+spec:
+  # ====== 初始化容器（按顺序依次执行）======
+  initContainers:
+    # 第一步：等待数据库就绪
+    - name: wait-for-db
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+          until nc -z mysql-service 3306; do
+            echo "Waiting for database..."
+            sleep 2
+          done
+          echo "Database is ready!"
+
+    # 第二步：下载配置文件
+    - name: download-config
+      image: busybox
+      command:
+        - sh
+        - -c
+        - wget -O /config/app.conf http://config-server/app.conf
+      volumeMounts:
+        - name: config-volume
+          mountPath: /config
+
+    # 第三步：执行数据库迁移
+    - name: db-migration
+      image: my-app:latest
+      command: ["python", "manage.py", "migrate"]
+      env:
+        - name: DB_HOST
+          value: "mysql-service"
+
+  # ====== 主容器（所有 initContainer 成功后才启动）======
+  containers:
+    - name: app
+      image: my-app:latest
+      ports:
+        - containerPort: 8080
+      volumeMounts:
+        - name: config-volume
+          mountPath: /config
+
+  volumes:
+    - name: config-volume
+      emptyDir: {}
+```
+
+多个 InitContainer 是严格按顺序逐个执行的，不是并行的：
+
+```
+wait-for-db（成功）→ download-config（成功）→ db-migration（成功）→ 主容器 app 启动
+```
+
+任何一个失败，后面的都不会执行，Pod 状态会显示为 `Init:0/3`、`Init:1/3` 这样的进度。
+
+```bash
+# 查看 Pod 状态可以看到 init 进度
+kubectl get pod my-app
+# NAME     READY   STATUS     RESTARTS   AGE
+# my-app   0/1     Init:1/3   0          10s   ← 第二个 init 容器正在执行
+```
+
+常见使用场景：
+
+- 等待依赖服务就绪是最常见的场景，确保数据库、Redis、消息队列等上游服务可用后再启动应用，避免应用启动后连接失败不断重启。
+- 准备数据或配置，比如从远程下载配置文件、从 Git 仓库拉取代码、解压数据包到共享 Volume 中。
+- 权限和环境准备，比如修改文件目录权限、生成证书文件、执行 sysctl 调优等需要特权操作但主容器不需要特权的场景。
+
+InitContainer 可以使用和主容器完全不同的镜像。比如你的主容器是一个精简的 Go 应用镜像，里面什么工具都没有，但你可以用一个带有 `wget`、`git`、`mysql-client` 的 InitContainer 来做准备工作。初始化完成后这个容器就退出了，不占运行时资源。
+
 ## 资源调度
 
 ### 标签与选择器
@@ -1263,7 +1353,7 @@ spec:
                   number: 8080
 ```
 
-## 配置与存储
+## 配置
 
 ### ConfigMap
 
@@ -1919,3 +2009,1032 @@ initContainer 阶段：
 当你 `kubectl edit configmap nginx-config` 修改内容后，`/mnt/config/nginx.conf` 会自动更新（Kubernetes 的整目录挂载机制），而软链接会跟着指向新内容。
 
 这个方案解决了文件内容的热更新，但 nginx 本身不会自动 reload 配置。你还需要配合一个 sidecar 或者用 `inotifywait` 之类的工具监听文件变化，然后执行 `nginx -s reload`。所以完整方案通常是：软链接解决文件更新 + sidecar 解决进程 reload。
+
+## 存储
+
+### Volumes
+
+#### HostPath
+
+在 Kubernetes 中，`hostPath` 是一种 Volume 类型，它将宿主节点（Node）文件系统上的某个文件或目录挂载到 Pod 中。
+
+简单来说，Pod 通过 `hostPath` 可以直接访问它所运行的那台物理机或虚拟机上的文件系统路径。
+
+常见用途：
+
+- 运行需要访问 Docker 内部机制的容器（如挂载 `/var/lib/docker`）
+- 运行 cAdvisor 等监控工具（需要访问 `/sys`）
+- 让容器检查某个 hostPath 是否存在，以判断运行环境
+
+基本示例：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: example
+spec:
+  containers:
+    - name: app
+      image: nginx
+      volumeMounts:
+        - mountPath: /data
+          name: my-volume
+  volumes:
+    - name: my-volume
+      hostPath:
+        path: /mnt/data # 宿主机上的路径
+        type: DirectoryOrCreate # 可选的类型检查
+```
+
+`type` 字段的可选值：
+
+- 空字符串（默认）：不做任何检查
+- `DirectoryOrCreate`：路径不存在则自动创建目录
+- `Directory`：路径必须已存在且是目录
+- `FileOrCreate`：不存在则创建文件
+- `File`：必须已存在且是文件
+- `Socket`、`CharDevice`、`BlockDevice`：对应类型的设备/套接字
+
+需要注意的风险：
+
+- 不同 Node 上同一路径的内容可能不同，Pod 调度到不同节点会导致行为不一致。
+- 它直接暴露了宿主机文件系统，存在安全隐患（如果挂载了 `/` 等敏感路径，容器可能影响整个节点）。
+- 一般不推荐在生产环境中使用，除非有明确的运维需求（比如 DaemonSet 类的系统组件）。
+
+如果只是需要持久化存储，推荐使用 `PersistentVolume` / `PersistentVolumeClaim` 等更安全的方案。
+
+#### EmptyDir
+
+`emptyDir` 是 Kubernetes 中一种临时性 Volume，它在 Pod 被调度到某个节点时自动创建，初始内容为空，Pod 被删除时随之销毁。
+
+核心特点：
+
+- 生命周期与 Pod 绑定——Pod 存在它就在，Pod 删除它就没了。
+- 同一个 Pod 内的多个容器可以共享同一个 `emptyDir`，实现容器间数据交换。
+- 容器崩溃重启不会丢失 `emptyDir` 中的数据（因为 Pod 还在），但 Pod 被删除或重新调度就会丢失。
+
+典型用途：
+
+- 容器间共享数据：比如一个 sidecar 容器写日志，另一个容器读取并上传。
+- 临时缓存/暂存空间：排序、计算等中间结果的临时存放。
+- 检查点恢复：长时间计算中保存中间状态，容器崩溃后可以从中恢复。
+
+基本示例：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: example
+spec:
+  containers:
+    - name: writer
+      image: busybox
+      command: ["sh", "-c", "echo hello > /shared/data.txt && sleep 3600"]
+      volumeMounts:
+        - mountPath: /shared
+          name: shared-vol
+    - name: reader
+      image: busybox
+      command: ["sh", "-c", "cat /shared/data.txt && sleep 3600"]
+      volumeMounts:
+        - mountPath: /shared
+          name: shared-vol
+  volumes:
+    - name: shared-vol
+      emptyDir: {}
+```
+
+上面两个容器通过 `emptyDir` 共享了 `/shared` 目录。
+
+可选配置：
+
+- `medium: "Memory"`：将 `emptyDir` 存放在内存（tmpfs）中，速度极快，但占用 Pod 的内存限额，节点重启数据也会丢失。
+- `sizeLimit`：限制占用的空间大小。
+
+```yaml
+emptyDir:
+  medium: Memory
+  sizeLimit: 128Mi
+```
+
+和 `hostPath` 的关键区别： `emptyDir` 不依赖节点上的特定路径，更安全、更可移植，适合大多数临时存储场景。
+
+### NFS
+
+在 K8s 中使用 NFS 主要有两种方式，从简单到规范：
+
+1. 直接在 Pod 中挂载 NFS
+
+最简单，适合测试或临时使用：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nfs-example
+spec:
+  containers:
+    - name: app
+      image: nginx
+      volumeMounts:
+        - mountPath: /data
+          name: nfs-vol
+  volumes:
+    - name: nfs-vol
+      nfs:
+        server: 192.168.1.100 # NFS 服务器地址
+        path: /shared/data # NFS 导出的路径
+        readOnly: false
+```
+
+缺点是每个 Pod 都要硬编码 NFS 地址和路径，不好维护。
+
+2. 通过 PV + PVC 使用（推荐）
+
+把 NFS 的细节封装到 PV 里，Pod 只需要声明 PVC，解耦存储和应用。
+
+- 创建 PersistentVolume
+
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany # NFS 天然支持多节点读写
+  nfs:
+    server: 192.168.1.100
+    path: /shared/data
+```
+
+- 创建 PersistentVolumeClaim
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+```
+
+- Pod 中引用 PVC
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  containers:
+    - name: app
+      image: nginx
+      volumeMounts:
+        - mountPath: /data
+          name: nfs-vol
+  volumes:
+    - name: nfs-vol
+      persistentVolumeClaim:
+        claimName: nfs-pvc
+```
+
+这样多个 Pod（哪怕在不同节点）都可以挂载同一个 `nfs-pvc`，共享同一份数据。
+
+K8s 节点上需要安装 NFS 客户端，否则挂载会失败：
+
+```bash
+# Ubuntu / Debian
+sudo apt install nfs-common
+
+# CentOS / RHEL
+sudo yum install nfs-utils
+```
+
+比较：
+
+```markdown
+直接挂载 NFS → 简单快速，但 NFS 地址散落在各个 Pod 定义中
+PV + PVC → 多一层抽象，但解耦了存储细节，换存储后端时 Pod 不用改
+```
+
+生产环境建议用 PV/PVC 的方式。如果 NFS 卷很多，还可以部署一个 NFS Provisioner 来实现动态创建 PV，不用每次手动建。
+
+### PV 和 PVC
+
+#### 生命周期
+
+1. 构建（Provisioning）
+
+- 静态构建：管理员手动预先创建 PV，指定容量、访问模式、存储后端等参数，PV 创建后处于 Available 状态等待被绑定。
+- 动态构建：当用户提交 PVC 且没有匹配的静态 PV 时，集群根据 PVC 中指定的 StorageClass 自动创建 PV。这是生产环境中更常用的方式。
+
+2. 绑定（Binding）
+
+PVC 提交后，控制器会寻找满足条件（容量、访问模式、StorageClass 等）的 PV 进行绑定。PV 和 PVC 是一对一的关系，绑定后 PV 状态变为 Bound。如果找不到匹配的 PV 且没有合适的 StorageClass，PVC 会一直处于 Pending 状态。
+
+3. 使用（Using）
+
+Pod 通过在 volumes 中引用 PVC 来使用存储。此时 PV 正在被 Pod 挂载使用。Kubernetes 提供了存储保护机制——如果用户尝试删除一个正在被 Pod 使用的 PVC，系统不会立即删除，而是延迟到 Pod 不再使用该 PVC 时才执行。
+
+4. 回收策略（Reclaiming）
+
+当 PVC 被删除后，PV 的处理方式取决于回收策略：
+
+- Retain（保留）：PV 进入 Released 状态，数据保留，但不能被新的 PVC 绑定。管理员需要手动清理数据并决定是删除还是重新使用该 PV。这是最安全的策略。
+- Delete（删除）：自动删除 PV 及其对应的后端存储资源（如 AWS EBS、GCE PD 等）。动态构建的 PV 默认使用这个策略。
+- Recycle（回收）：对卷执行基本的数据清除（相当于 `rm -rf /thevolume/*`），然后让 PV 重新变为 Available。不过这个策略已经被废弃了，官方建议用动态构建替代。
+
+#### 静态构建案例
+
+下面是一个完整的例子，使用 NFS 作为存储后端，依次创建 PV、PVC，然后在 Pod 中挂载使用。
+
+```yaml
+# ============================================
+# 1. 创建 PersistentVolume (PV)
+# ============================================
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-nfs-pv
+  labels:
+    type: nfs
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany # 多节点读写
+  persistentVolumeReclaimPolicy: Retain # 回收策略：保留
+  storageClassName: nfs-storage
+  nfs:
+    server: 192.168.1.100 # NFS 服务器地址
+    path: /data/nfs-share # NFS 共享目录
+
+---
+# ============================================
+# 2. 创建 PersistentVolumeClaim (PVC)
+# ============================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-nfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany # 必须与 PV 的 accessModes 匹配
+  resources:
+    requests:
+      storage: 2Gi # 请求 2Gi，PV 有 5Gi，满足条件
+  storageClassName: nfs-storage # 必须与 PV 的 storageClassName 一致
+
+---
+# ============================================
+# 3. 创建 Pod，挂载 PVC
+# ============================================
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app-pod
+spec:
+  containers:
+    - name: my-app
+      image: nginx:1.24
+      ports:
+        - containerPort: 80
+      volumeMounts:
+        - name: nfs-data # 引用下面 volumes 中定义的名称
+          mountPath: /usr/share/nginx/html # 容器内挂载路径
+  volumes:
+    - name: nfs-data
+      persistentVolumeClaim:
+        claimName: my-nfs-pvc # 引用上面创建的 PVC 名称
+```
+
+验证
+
+```bash
+# 查看 PV 状态，应为 Bound
+kubectl get pv my-nfs-pv
+
+# 查看 PVC 状态，应为 Bound
+kubectl get pvc my-nfs-pvc
+
+# 查看 Pod 是否正常运行
+kubectl get pod my-app-pod
+
+# 进入 Pod 验证挂载
+kubectl exec -it my-app-pod -- df -h /usr/share/nginx/html
+```
+
+PVC 能成功绑定 PV 需要满足几个条件：storageClassName 一致、accessModes 匹配、PV 的容量 ≥ PVC 请求的容量。在这个例子中，PV 提供 5Gi，PVC 请求 2Gi，storageClassName 都是 `nfs-storage`，访问模式都是 `ReadWriteMany`，所以能成功绑定。
+
+#### 动态构建案例
+
+如果你想用动态构建的方式，就不需要手动创建 PV，只需要提前创建好 StorageClass，然后 PVC 引用该 StorageClass，集群会自动创建 PV。
+
+```yaml
+# ============================================
+# 1. 创建 StorageClass（管理员一次性配置）
+# ============================================
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-storage
+provisioner: kubernetes.io/aws-ebs # 存储供应商（根据环境修改）
+parameters:
+  type: gp3 # AWS EBS 卷类型
+  fsType: ext4 # 文件系统类型
+reclaimPolicy: Delete # PVC 删除时自动删除 PV 和后端存储
+allowVolumeExpansion: true # 允许后续扩容
+volumeBindingMode: WaitForFirstConsumer # 等 Pod 调度后再创建卷（推荐）
+
+---
+# ============================================
+# 2. 创建 PVC（自动触发 PV 的动态创建）
+# ============================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # 单节点读写，EBS 典型模式
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-storage # 引用上面的 StorageClass
+
+---
+# ============================================
+# 3. 创建 Deployment，挂载 PVC
+# ============================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-web-app
+  template:
+    metadata:
+      labels:
+        app: my-web-app
+    spec:
+      containers:
+        - name: app
+          image: nginx:1.24
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: app-storage
+              mountPath: /var/www/data # 容器内挂载路径
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+      volumes:
+        - name: app-storage
+          persistentVolumeClaim:
+            claimName: app-data-pvc # 引用上面的 PVC
+
+---
+# ============================================
+# 补充：使用 StatefulSet 的场景（每个副本独立 PV）
+# ============================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: my-database
+spec:
+  serviceName: my-database
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-database
+  template:
+    metadata:
+      labels:
+        app: my-database
+    spec:
+      containers:
+        - name: db
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "my-secret-pw" # 生产环境请用 Secret
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/mysql
+  # volumeClaimTemplates 会为每个副本自动创建独立的 PVC
+  volumeClaimTemplates:
+    - metadata:
+        name: db-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 20Gi
+        storageClassName: fast-storage
+```
+
+静态构建需要管理员手动创建 PV，而动态构建只需要配置好 StorageClass，之后创建 PVC 时集群会自动创建匹配的 PV，不需要手动干预。
+
+```bash
+# 部署资源
+kubectl apply -f dynamic-example.yaml
+
+# 查看 StorageClass
+kubectl get sc fast-storage
+
+# 查看 PVC — 状态应为 Bound
+kubectl get pvc app-data-pvc
+
+# 查看自动创建的 PV
+kubectl get pv
+# 会看到一个名称类似 pvc-xxxx-xxxx 的 PV，由集群自动创建
+
+# 如果用了 StatefulSet，查看每个副本的 PVC
+kubectl get pvc
+# 会看到 db-data-my-database-0、db-data-my-database-1、db-data-my-database-2
+```
+
+- 关于 provisioner：不同环境使用不同的 provisioner，比如 AWS 用 `kubernetes.io/aws-ebs` 或 `ebs.csi.aws.com`，阿里云用 `diskplugin.csi.alibabacloud.com`，本地集群可以用 NFS provisioner 等。
+- 关于 volumeBindingMode：设置为 `WaitForFirstConsumer` 时，PV 会等到 Pod 被调度到具体节点后才创建，这样可以保证存储和 Pod 在同一个可用区，避免跨区挂载失败。
+- 关于 StatefulSet：示例中补充了 StatefulSet 的 `volumeClaimTemplates`，这是有状态应用（如数据库）的常见用法，每个副本会自动获得一个独立的 PVC 和 PV，副本扩缩容时互不影响。
+
+#### StorageClass
+
+Provisioner 是动态构建的核心组件，它负责监听 PVC 的创建事件，然后自动创建对应的 PV 和后端存储。
+
+Kubernetes 本身不内置 NFS 的 Provisioner，所以需要额外部署一个。常用的是 `nfs-subdir-external-provisioner`，它的工作原理是：当有新的 PVC 创建时，它会在 NFS 服务器上自动创建一个子目录作为 PV 的存储路径。
+
+nfs-provisioner 是具体的 NFS 制备器部署，通常以 Deployment 的方式运行在集群中。它需要知道 NFS 服务器地址和共享路径：
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-provisioner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nfs-provisioner
+  template:
+    metadata:
+      labels:
+        app: nfs-provisioner
+    spec:
+      serviceAccountName: nfs-provisioner-sa
+      containers:
+        - name: provisioner
+          image: registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2
+          env:
+            - name: PROVISIONER_NAME
+              value: k8s-sigs.io/nfs-subdir-external-provisioner
+            - name: NFS_SERVER
+              value: 192.168.1.100 # NFS 服务器地址
+            - name: NFS_PATH
+              value: /data/nfs-share # NFS 共享目录
+          volumeMounts:
+            - name: nfs-root
+              mountPath: /persistentvolumes
+      volumes:
+        - name: nfs-root
+          nfs:
+            server: 192.168.1.100
+            path: /data/nfs-share
+```
+
+Provisioner 需要操作 PV、PVC 等集群资源，所以必须配置相应的权限：
+
+```yaml
+# ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nfs-provisioner-sa
+
+---
+# ClusterRole — 定义权限
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nfs-provisioner-role
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
+
+---
+# ClusterRoleBinding — 绑定权限到 ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nfs-provisioner-binding
+subjects:
+  - kind: ServiceAccount
+    name: nfs-provisioner-sa
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: nfs-provisioner-role
+  apiGroup: rbac.authorization.k8s.io
+```
+
+创建 StorageClass 并指向我们部署的 NFS Provisioner：
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-dynamic
+provisioner: k8s-sigs.io/nfs-subdir-external-provisioner # 与 Provisioner 中设置的名称一致
+parameters:
+  archiveOnDelete: "true" # 删除 PVC 时保留数据（重命名目录而非删除）
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+```
+
+PVC 一直 Pending 通常有这几个原因：
+
+- Provisioner 没有正常运行：`kubectl get pods` 检查 provisioner Pod 状态
+- StorageClass 名称不匹配：PVC 引用的 storageClassName 和 StorageClass 的 name 不一致
+- RBAC 权限不足：provisioner 没有权限创建 PV，查看 provisioner Pod 的日志 `kubectl logs <provisioner-pod>`
+- NFS 服务端问题：NFS 服务未启动、共享目录不存在、防火墙拦截等
+
+最后创建 PVC 和 Pod 来验证整个流程是否正常：
+
+```yaml
+# 测试 PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-nfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs-dynamic # 引用上面的 StorageClass
+
+---
+# 测试 Pod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-nfs-pod
+spec:
+  containers:
+    - name: test
+      image: busybox
+      command:
+        [
+          "sh",
+          "-c",
+          "echo 'NFS is working!' > /mnt/test.txt && cat /mnt/test.txt && sleep 3600",
+        ]
+      volumeMounts:
+        - name: nfs-vol
+          mountPath: /mnt
+  volumes:
+    - name: nfs-vol
+      persistentVolumeClaim:
+        claimName: test-nfs-pvc
+```
+
+验证命令：
+
+```bash
+# 检查 PVC 是否 Bound
+kubectl get pvc test-nfs-pvc
+
+# 检查自动创建的 PV
+kubectl get pv
+
+# 检查 Pod 日志，应输出 "NFS is working!"
+kubectl logs test-nfs-pod
+
+# 去 NFS 服务器上查看，会发现自动创建了子目录
+ls /data/nfs-share/
+```
+
+整个动态制备的链路是这样的：PVC 创建 → Kubernetes 发现没有匹配的 PV → 根据 storageClassName 找到 StorageClass → StorageClass 中的 provisioner 指向 NFS Provisioner → Provisioner 在 NFS 上创建子目录并创建 PV → PV 与 PVC 自动绑定 → Pod 挂载使用。管理员只需要一次性部署好 Provisioner、RBAC 和 StorageClass，之后开发人员只需要创建 PVC 就可以了。
+
+## 认证与授权
+
+### 认证
+
+#### 账户类型
+
+Kubernetes 中有两种完全不同的账户类型：
+
+- User Accounts（用户账户）：这是给人用的，比如管理员、开发人员通过 kubectl 操作集群时使用的身份。User Account 有几个特点：它是全局性的，不属于任何 namespace；Kubernetes 本身不管理 User Account，没有 User 这个 API 对象，通常由外部系统管理（比如证书、OIDC、LDAP 等）。常见的认证方式包括：
+  - X509 客户端证书：最常见的方式，kubeconfig 里的 client-certificate 就是这个
+  - Bearer Token：静态 token 文件或 OIDC token
+  - Webhook Token：对接外部认证系统
+
+```bash
+# 例如用证书方式创建用户
+openssl genrsa -out dev-user.key 2048
+openssl req -new -key dev-user.key -out dev-user.csr -subj "/CN=dev-user/O=dev-group"
+# 然后提交 CSR 给 Kubernetes CA 签发
+```
+
+- Service Accounts（服务账户）：这是给 Pod 里运行的程序用的，用于程序访问 API Server 时的身份认证。Service Account 是 namespace 级别的 Kubernetes 资源，可以通过 API 直接创建和管理。
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-app-sa
+  namespace: default
+```
+
+#### 自动化管理
+
+1. Service Account Admission Controller
+
+这是一个准入控制器，作用于 Pod 创建阶段。当你创建 Pod 时，如果没有指定 serviceAccountName，它会自动注入 default Service Account。同时它还会自动挂载 SA 对应的 token 到 Pod 中（路径是 `/var/run/secrets/kubernetes.io/serviceaccount/`）。
+
+简单说就是：你创建 Pod 时什么都不配，这个控制器会自动帮你把身份信息塞进去。
+
+```yaml
+# Pod 创建时如果没写 serviceAccountName
+# Admission Controller 自动补上：
+spec:
+  serviceAccountName: default # 自动添加
+  volumes: # 自动挂载 token
+    - name: kube-api-access-xxxxx
+      projected:
+        sources:
+          - serviceAccountToken:
+              path: token
+          - configMap:
+              name: kube-root-ca.crt
+          - downwardAPI:
+              items:
+                - path: namespace
+```
+
+2. Token Controller
+
+运行在 Controller Manager 中，负责管理 Service Account 的 token。在早期版本中它会为每个 SA 创建一个永久的 Secret token。在 1.22+ 之后，Kubernetes 转向了 TokenRequest API，由 kubelet 为每个 Pod 申请一个有时效的、有受众限制的 token，更安全。
+
+Token Controller 现在主要做两件事：当 SA 创建时确保相关资源就绪；当 SA 被删除时清理关联的 Secret。
+
+3. Service Account Controller
+
+这个也运行在 Controller Manager 中，职责很简单：确保每个 namespace 都有一个名为 default 的 Service Account。如果你新建了一个 namespace，它会自动创建 default SA；如果 default SA 被误删了，它也会自动重建。
+
+```bash
+# 创建一个新 namespace 后自动会有 default SA
+kubectl create namespace test
+kubectl get sa -n test
+# NAME      SECRETS   AGE
+# default   0         1s    ← 自动创建的
+```
+
+#### 工作流程
+
+把这些串起来，一个 Pod 从创建到访问 API Server 的认证流程是这样的：
+
+1. Service Account Controller 确保每个 namespace 都有 default SA
+2. 用户创建 Pod，可以指定 SA，也可以不指定
+3. Admission Controller 检查 Pod，如果没指定 SA 就注入 default，并配置 token 挂载
+4. kubelet 通过 TokenRequest API 获取一个短时效 token 挂载到 Pod 中
+5. Pod 内的程序读取 `/var/run/secrets/kubernetes.io/serviceaccount/token`，用这个 token 访问 API Server
+6. API Server 验证 token，确认身份后再进入授权（RBAC）阶段
+
+```bash
+# 在 Pod 内部可以这样验证
+cat /var/run/secrets/kubernetes.io/serviceaccount/token
+cat /var/run/secrets/kubernetes.io/serviceaccount/namespace
+cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+# 用 token 访问 API Server
+curl -s --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+  -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+  https://kubernetes.default.svc/api/v1/namespaces/default/pods
+```
+
+生产环境中有几个要注意的点：不要让 Pod 使用 default SA，而是为每个应用创建专用的 SA 并配合 RBAC 授权最小权限；如果 Pod 不需要访问 API Server，可以设置 `automountServiceAccountToken: false` 禁止自动挂载 token，减少攻击面。
+
+### 授权
+
+RBAC 的逻辑其实很简单：先定义"能做什么"（Role），再定义"谁能做"（Binding），把权限和主体绑定起来。核心原则就是最小权限：只给需要的资源和操作的权限，优先用 Role + RoleBinding 限定在 namespace 内，只有真正需要集群级别操作时才用 ClusterRole + ClusterRoleBinding。
+
+#### 资源
+
+1. Role（角色）—— namespace 级别的权限定义
+
+Role 定义了在某个特定 namespace 内可以对哪些资源执行哪些操作。
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: dev # 只在 dev namespace 生效
+rules:
+  - apiGroups: [""] # 核心 API 组，包含 Pod、Service 等
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+```
+
+2. ClusterRole（集群角色）—— 集群级别的权限定义
+
+跟 Role 的区别是 ClusterRole 不受 namespace 限制，它可以定义对集群级资源（如 Node、PV、Namespace 本身）的权限，也可以用于跨所有 namespace 的资源访问。
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-node-reader # 没有 namespace 字段
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"] # Node 是集群级资源，只能用 ClusterRole
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list"]
+```
+
+Kubernetes 内置了一些常用的 ClusterRole，比如 `cluster-admin`（最高权限）、`view`（只读）、`edit`（编辑）、`admin`（namespace 管理员）。
+
+```bash
+# 查看内置的 ClusterRole
+kubectl get clusterrole
+```
+
+3. RoleBinding（角色绑定）—— namespace 级别的绑定
+
+RoleBinding 把 Role 或 ClusterRole 绑定到具体的主体（User、Group、ServiceAccount），让他们在指定 namespace 内获得权限。
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods-binding
+  namespace: dev
+subjects: # "谁"
+  - kind: User # 可以是 User、Group、ServiceAccount
+    name: dev-user
+    apiGroup: rbac.authorization.k8s.io
+  - kind: ServiceAccount # 也可以绑定 SA
+    name: my-app-sa
+    namespace: dev
+roleRef: # "获得什么权限"
+  kind: Role
+  name: pod-reader # 引用上面定义的 Role
+  apiGroup: rbac.authorization.k8s.io
+```
+
+一个重要的点：RoleBinding 也可以引用 ClusterRole，这样做的效果是让 ClusterRole 的权限限定在某个 namespace 内。这在实际中非常常用——定义一次 ClusterRole，然后通过 RoleBinding 在不同 namespace 中复用。
+
+```yaml
+# RoleBinding 引用 ClusterRole，权限被限定在 dev namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dev-view-binding
+  namespace: dev
+subjects:
+  - kind: User
+    name: dev-user
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole # 引用的是 ClusterRole
+  name: view # Kubernetes 内置的只读角色
+  apiGroup: rbac.authorization.k8s.io
+```
+
+4. ClusterRoleBinding（集群角色绑定）—— 集群级别的绑定
+
+把 ClusterRole 绑定到主体，权限在整个集群生效。
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-binding # 没有 namespace
+subjects:
+  - kind: User
+    name: admin-user
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin # 集群最高权限
+  apiGroup: rbac.authorization.k8s.io
+```
+
+#### 关系总结
+
+简单来说就是一个二维组合：
+
+|          | namespace 级别 | 集群级别           |
+| -------- | -------------- | ------------------ |
+| 定义权限 | Role           | ClusterRole        |
+| 绑定权限 | RoleBinding    | ClusterRoleBinding |
+
+其中 RoleBinding 可以引用 Role 或 ClusterRole，而 ClusterRoleBinding 只能引用 ClusterRole。
+
+#### 场景示例
+
+一个典型的多团队权限管理方案，每个团队只能操作自己 namespace 内的资源，互不干扰：
+
+```yaml
+# 1. 创建一个通用的开发者 ClusterRole（定义一次）
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: developer
+rules:
+  - apiGroups: ["", "apps"]
+    resources: ["pods", "deployments", "services", "configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"] # Secret 只给读权限
+
+---
+# 2. 团队 A 在自己的 namespace 中使用这个角色
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: team-a-dev-binding
+  namespace: team-a
+subjects:
+  - kind: Group
+    name: team-a-developers # 绑定到组，方便管理
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: developer
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# 3. 团队 B 在自己的 namespace 中复用同一个角色
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: team-b-dev-binding
+  namespace: team-b
+subjects:
+  - kind: Group
+    name: team-b-developers
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: developer
+  apiGroup: rbac.authorization.k8s.io
+```
+
+排查权限：
+
+```bash
+# 查看某用户是否有某个权限
+kubectl auth can-i get pods --as dev-user -n dev
+# yes / no
+
+# 查看某用户的所有权限
+kubectl auth can-i --list --as dev-user -n dev
+
+# 查看某个 namespace 的所有 RoleBinding
+kubectl get rolebinding -n dev
+
+# 查看某个 ClusterRoleBinding 的详情
+kubectl describe clusterrolebinding admin-binding
+```
+
+#### User详解
+
+Kubernetes 的 User 和 Linux 的用户完全不是一回事。Linux 用户是操作系统层面的，存在 `/etc/passwd` 里，用来登录服务器。Kubernetes 的 User 是 API Server 层面的身份标识，用来控制"谁能通过 API 操作集群资源"。
+
+你可以用 root 账号 SSH 登录到 Master 节点，但如果你的 kubeconfig 里没有合法的凭证，kubectl 照样无法操作集群。反过来，你不需要登录任何服务器，只要有 kubeconfig 文件，在自己的笔记本上就能远程管理集群。
+
+Kubernetes 没有 User 这个 API 对象，你无法通过 `kubectl create user` 来创建用户。User 只是一个身份标识字符串，来源于你提供的认证凭证。
+
+最常见的方式是 X509 客户端证书，证书里的 CN（Common Name）字段就是用户名，O（Organization）字段就是用户组：
+
+```bash
+# 生成证书时，CN=zhangsan 就是用户名，O=team-a 就是组
+openssl req -new -key zhangsan.key -out zhangsan.csr \
+  -subj "/CN=zhangsan/O=team-a"
+```
+
+API Server 收到请求后从证书里提取出 `zhangsan` 这个字符串，然后去 RBAC 里查这个字符串有什么权限。就这么简单——User 只是一个名字，不是一个存储在集群中的实体。
+
+假设团队 A 有三个开发人员，实际操作流程是这样的：
+
+```bash
+# 1. 为每个人生成证书（通常由集群管理员操作）
+
+# 张三
+openssl genrsa -out zhangsan.key 2048
+openssl req -new -key zhangsan.key -out zhangsan.csr \
+  -subj "/CN=zhangsan/O=team-a"
+
+# 李四
+openssl genrsa -out lisi.key 2048
+openssl req -new -key lisi.key -out lisi.csr \
+  -subj "/CN=lisi/O=team-a"
+
+# 王五
+openssl genrsa -out wangwu.key 2048
+openssl req -new -key wangwu.key -out wangwu.csr \
+  -subj "/CN=wangwu/O=team-a"
+
+# 2. 用集群 CA 签发证书
+# （通过 Kubernetes CSR API 或直接用 CA 密钥签发）
+```
+
+然后管理员为每个人生成各自的 kubeconfig 文件：
+
+```yaml
+# zhangsan 的 kubeconfig
+apiVersion: v1
+kind: Config
+clusters:
+  - cluster:
+      server: https://api-server:6443
+      certificate-authority-data: <CA证书>
+    name: my-cluster
+users:
+  - name: zhangsan
+    user:
+      client-certificate-data: <张三的证书> # 身份就在这里
+      client-key-data: <张三的私钥>
+contexts:
+  - context:
+      cluster: my-cluster
+      user: zhangsan
+      namespace: team-a
+    name: zhangsan-context
+current-context: zhangsan-context
+```
+
+张三拿到这个 kubeconfig 文件后，在自己电脑上就能操作集群了：
+
+```bash
+export KUBECONFIG=~/zhangsan-kubeconfig.yaml
+kubectl get pods    # API Server 识别出身份是 zhangsan
+```
+
+权限绑定可以绑定个人，也可以绑定组。因为三个人的证书里都有 `O=team-a`，可以直接按组授权，不需要一个一个绑定：
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: team-a-binding
+  namespace: team-a
+subjects:
+  # 按组绑定，team-a 所有人都有权限
+  - kind: Group
+    name: team-a # 对应证书中的 O 字段
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: developer
+  apiGroup: rbac.authorization.k8s.io
+```
+
+如果某个人需要额外权限，可以单独再加一个绑定：
+
+```yaml
+subjects:
+  - kind: User
+    name: zhangsan # 对应证书中的 CN 字段
+    apiGroup: rbac.authorization.k8s.io
+```
+
+Kubernetes 的 User 就是"拿着合法凭证访问 API Server 的人"，它不存储在集群里，而是从证书、Token 等认证信息中提取出来的一个身份字符串。和登录 Linux 服务器的用户没有关系，和能不能操作集群有关系。
